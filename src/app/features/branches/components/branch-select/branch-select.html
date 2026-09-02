@@ -1,0 +1,14 @@
+<select
+  aria-label="Sucursal"
+  class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5"
+  [value]="value() ?? ''"
+  [disabled]="disabled()"
+  (change)="valueChange.emit($any($event.target).value || null)"
+>
+  @if (includeUnassigned()) { <option value="">Sin sucursal</option> }
+  @for (branch of branches(); track branch.id) {
+    <option [value]="branch.id" [disabled]="!branch.activa">
+      {{ branch.nombre }} · {{ branch.ciudad.nombre }}{{ branch.activa ? '' : ' (inactiva)' }}
+    </option>
+  }
+</select>

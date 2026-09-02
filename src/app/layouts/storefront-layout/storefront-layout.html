@@ -1,0 +1,43 @@
+<div class="flex min-h-dvh flex-col bg-stone-50 text-stone-900">
+  <header class="border-b border-stone-200 bg-white">
+    <div class="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4 lg:px-8">
+      <a routerLink="/" class="flex items-center gap-3" aria-label="Ir al inicio">
+        <span class="grid size-10 place-items-center rounded-2xl bg-rose-700 text-lg font-bold text-white">R</span>
+        <span>
+          <strong class="block text-sm tracking-[0.18em] uppercase">Ropa</strong>
+          <small class="block text-xs text-stone-500">Comercio inteligente</small>
+        </span>
+      </a>
+      <nav class="flex items-center gap-3" aria-label="Cuenta">
+        <a routerLink="/catalogo" class="text-sm font-semibold text-stone-600 hover:text-rose-700">Catálogo</a>
+        @if (auth.isAuthenticated()) {
+          @if (auth.hasAnyRole(['administrador'])) {
+            <a routerLink="/admin" class="text-sm font-semibold text-stone-600 hover:text-rose-700">Administrar</a>
+          }
+          @if (auth.hasAnyRole(['administrador', 'encargado', 'cajero'])) {
+            <a routerLink="/inventario" class="text-sm font-semibold text-stone-600 hover:text-rose-700">Inventario</a>
+          }
+          <a routerLink="/perfil" class="text-sm font-semibold text-stone-600 hover:text-rose-700">
+            {{ auth.user()?.nombres }}
+          </a>
+          <button type="button" class="text-sm font-semibold text-rose-700" (click)="logout()">Salir</button>
+        } @else {
+          <a routerLink="/auth/login" class="text-sm font-semibold text-stone-600 hover:text-rose-700">Ingresar</a>
+          <a routerLink="/auth/registro" class="rounded-xl bg-rose-700 px-4 py-2 text-sm font-semibold text-white">
+            Crear cuenta
+          </a>
+        }
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-1">
+    <router-outlet />
+  </main>
+
+  <footer class="border-t border-stone-200 bg-white">
+    <div class="mx-auto max-w-6xl px-5 py-5 text-sm text-stone-500 lg:px-8">
+      Plataforma académica de comercio electrónico
+    </div>
+  </footer>
+</div>

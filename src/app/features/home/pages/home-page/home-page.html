@@ -1,0 +1,44 @@
+<section class="mx-auto grid w-full max-w-6xl gap-10 px-5 py-14 lg:grid-cols-[1.1fr_0.9fr] lg:px-8 lg:py-24">
+  <div class="self-center">
+    <p class="text-sm font-semibold tracking-[0.2em] text-rose-700 uppercase">Incremento 0</p>
+    <h1 class="mt-4 max-w-2xl text-4xl leading-tight font-bold tracking-tight text-stone-950 sm:text-5xl">
+      La base técnica de la tienda ya está preparada.
+    </h1>
+    <p class="mt-6 max-w-xl text-lg leading-8 text-stone-600">
+      Esta pantalla verifica el recorrido Angular → FastAPI → PostgreSQL antes de construir los módulos del negocio.
+    </p>
+
+    <div class="mt-8 flex flex-wrap items-center gap-4">
+      <button
+        type="button"
+        class="rounded-xl bg-rose-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700"
+        (click)="checkServices()"
+      >
+        Volver a comprobar
+      </button>
+      @if (environment()) {
+        <span class="text-sm text-stone-500">Entorno: {{ environment() }}</span>
+      }
+    </div>
+  </div>
+
+  <div class="rounded-3xl bg-stone-900 p-6 shadow-xl sm:p-8">
+    <div class="mb-6">
+      <p class="text-xs font-semibold tracking-[0.18em] text-rose-300 uppercase">Estado del sistema</p>
+      <p class="mt-2 text-sm leading-6 text-stone-300" aria-live="polite">{{ message() }}</p>
+    </div>
+
+    <div class="grid gap-4">
+      <app-service-status
+        label="API FastAPI"
+        description="Contrato REST bajo /api/v1"
+        [state]="apiState()"
+      />
+      <app-service-status
+        label="PostgreSQL"
+        description="Consulta SELECT 1 mediante SQLAlchemy"
+        [state]="databaseState()"
+      />
+    </div>
+  </div>
+</section>

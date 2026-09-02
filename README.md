@@ -1,59 +1,78 @@
-# Tienda
+# Frontend de la tienda de ropa
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.7.
+Aplicación Angular 21 standalone del e-commerce académico. Consume la API REST
+versionada de FastAPI y utiliza Tailwind CSS para la interfaz.
 
-## Development server
+## Preparación
 
-To start a local development server, run:
-
-```bash
-ng serve
+```powershell
+npm install
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+La configuración de desarrollo usa:
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```text
+http://localhost:8000/api/v1
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+La compilación de producción usa `/api/v1`, de modo que el dominio o proxy del
+despliegue pueda resolver el backend sin incluir direcciones locales en el
+bundle.
 
-```bash
-ng generate --help
+## Ejecución
+
+Primero inicia FastAPI en el puerto `8000` y después ejecuta:
+
+```powershell
+npm start
 ```
 
-## Building
+Abre `http://localhost:4200`. La pantalla inicial informa por separado si
+FastAPI y PostgreSQL están disponibles. Si PostgreSQL todavía no fue creado, la
+API aparecerá disponible y la base como pendiente.
 
-To build the project run:
+## Verificación
 
-```bash
-ng build
+```powershell
+npm test -- --watch=false
+npm run build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Organización inicial
 
-## Running unit tests
+- `core/config`: URL e inyección de configuración de la API.
+- `core/http`: normalización común de errores HTTP.
+- `core/services`: salud de la API y notificaciones SweetAlert2.
+- `layouts`: shells de navegación por tipo de experiencia.
+- `features`: páginas cargadas de forma lazy.
+- `shared`: modelos y elementos visuales reutilizables.
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+La lógica de seguridad, inventario, precios y permisos siempre tendrá como
+autoridad al backend; el frontend solo presenta el estado recibido por la API.
 
-```bash
-ng test
-```
+## Autenticación
 
-## Running end-to-end tests
+- `/auth/registro`: alta pública de clientes.
+- `/auth/login`: inicio de sesión.
+- `/perfil`: información de la cuenta autenticada.
+- `/admin/usuarios`: CRUD de usuarios y activación/desactivación.
+- `/admin/roles`: CRUD de roles adicionales.
+- `/admin/sucursales`: administración de ciudades y sucursales con búsqueda,
+  paginación y activación/desactivación.
+- `/admin/categorias`: CRUD y activación de categorías.
+- `/admin/proveedores`: CRUD de proveedores genéricos con sus datos de contacto.
+- `/catalogo`: catálogo público con búsqueda, filtros, paginación y detalle de
+  variantes e imágenes.
+- `/admin/catalogo`: administración de tallas, colores, temporadas, colecciones,
+  productos, variantes e imágenes por URL.
+- `/inventario`: panel de existencias, filtros, recepción, ajustes e historial;
+  admite administrador, encargado y cajero, con acciones según el rol.
 
-For end-to-end (e2e) testing, run:
+El detalle de `/catalogo/:id` consulta la disponibilidad de la variante
+seleccionada y la presenta por sucursal.
 
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+El JWT se conserva en `sessionStorage`, se adjunta mediante un interceptor y se
+elimina al cerrar sesión o cuando `/auth/me` rechaza la restauración. Las rutas
+administrativas generales requieren `administrador`; inventario admite también
+`encargado` y `cajero`, pero el backend limita sucursal y acciones. Ocultar
+enlaces en la interfaz no sustituye la autorización del backend.

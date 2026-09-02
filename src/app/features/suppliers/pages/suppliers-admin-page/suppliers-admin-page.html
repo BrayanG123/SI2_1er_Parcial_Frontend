@@ -1,0 +1,28 @@
+<section>
+  <p class="text-sm font-semibold tracking-[0.18em] text-rose-700 uppercase">Abastecimiento</p>
+  <h1 class="mt-2 text-3xl font-bold">Proveedores</h1>
+  <p class="mt-2 text-stone-600">Gestiona los datos básicos de quienes suministran las prendas.</p>
+  @if (errorMessage()) { <p class="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">{{ errorMessage() }}</p> }
+
+  <form [formGroup]="form" class="mt-8 grid gap-4 rounded-2xl bg-white p-5 shadow-sm sm:grid-cols-2 lg:grid-cols-3" (ngSubmit)="save()">
+    <input formControlName="nombre" placeholder="Nombre" aria-label="Nombre" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+    <input formControlName="nit" placeholder="NIT (opcional)" aria-label="NIT" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+    <input formControlName="telefono" placeholder="Teléfono (opcional)" aria-label="Teléfono" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+    <input type="email" formControlName="email" placeholder="Correo (opcional)" aria-label="Correo" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+    <input formControlName="direccion" placeholder="Dirección (opcional)" aria-label="Dirección" class="rounded-xl border border-stone-300 px-3 py-2.5 lg:col-span-2" />
+    <button class="rounded-xl bg-rose-700 px-4 py-2.5 font-semibold text-white" [disabled]="saving()">{{ editingId() ? 'Guardar cambios' : 'Crear proveedor' }}</button>
+    @if (editingId()) { <button type="button" class="rounded-xl border border-stone-300 px-4 py-2.5 font-semibold" (click)="cancelEdit()">Cancelar</button> }
+  </form>
+
+  <form class="mt-6 flex gap-2" (ngSubmit)="applySearch()"><input [formControl]="search" placeholder="Buscar por nombre, NIT o correo" aria-label="Buscar proveedor" class="min-w-0 flex-1 rounded-xl border border-stone-300 px-3 py-2.5" /><button class="rounded-xl bg-stone-900 px-4 py-2.5 font-semibold text-white">Buscar</button></form>
+  <div class="mt-6 overflow-x-auto rounded-2xl bg-white shadow-sm">
+    @if (loading()) { <p class="p-6 text-stone-500">Cargando proveedores…</p> }
+    @else if (items().length === 0) { <p class="p-6 text-stone-500">No se encontraron proveedores.</p> }
+    @else {
+      <table class="w-full min-w-4xl text-left text-sm"><thead class="border-b border-stone-200 bg-stone-50 text-xs text-stone-500 uppercase"><tr><th class="p-4">Proveedor</th><th class="p-4">NIT</th><th class="p-4">Contacto</th><th class="p-4">Estado</th><th class="p-4">Acciones</th></tr></thead><tbody class="divide-y divide-stone-100">
+        @for (item of items(); track item.id) { <tr><td class="p-4"><strong>{{ item.nombre }}</strong><span class="block text-stone-500">{{ item.direccion || 'Sin dirección' }}</span></td><td class="p-4">{{ item.nit || '—' }}</td><td class="p-4">{{ item.telefono || '—' }}<span class="block text-stone-500">{{ item.email || 'Sin correo' }}</span></td><td class="p-4" [class]="item.activo ? 'text-emerald-700' : 'text-red-700'">{{ item.activo ? 'Activo' : 'Inactivo' }}</td><td class="p-4 whitespace-nowrap"><button class="mr-3 font-semibold text-amber-700" (click)="edit(item)">Editar</button><button class="mr-3 font-semibold text-stone-700" (click)="toggle(item)">{{ item.activo ? 'Desactivar' : 'Activar' }}</button><button class="font-semibold text-red-700" (click)="remove(item)">Eliminar</button></td></tr> }
+      </tbody></table>
+    }
+  </div>
+  <div class="mt-4 flex justify-between text-sm"><button [disabled]="page() === 1" class="font-semibold disabled:text-stone-300" (click)="changePage(-1)">Anterior</button><span>Página {{ page() }} · {{ total() }} registros</span><button [disabled]="!hasNext()" class="font-semibold disabled:text-stone-300" (click)="changePage(1)">Siguiente</button></div>
+</section>

@@ -1,0 +1,36 @@
+<section class="max-w-4xl">
+  <p class="text-sm font-semibold tracking-[0.18em] text-rose-700 uppercase">Autorización</p>
+  <h1 class="mt-2 text-3xl font-bold">Roles</h1>
+  <p class="mt-2 text-stone-600">Los cuatro roles iniciales están protegidos; puedes crear roles adicionales.</p>
+
+  @if (errorMessage()) {
+    <p class="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">{{ errorMessage() }}</p>
+  }
+
+  <form [formGroup]="form" class="mt-8 grid gap-4 rounded-2xl bg-white p-5 shadow-sm sm:grid-cols-[1fr_2fr_auto]" (ngSubmit)="save()">
+    <input formControlName="nombre" placeholder="nombre_del_rol" aria-label="Nombre del rol" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+    <input formControlName="descripcion" placeholder="Descripción" aria-label="Descripción" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+    <button type="submit" class="rounded-xl bg-rose-700 px-5 py-2.5 font-semibold text-white">
+      {{ editingId() ? 'Guardar' : 'Crear rol' }}
+    </button>
+    @if (editingId()) {
+      <button type="button" class="text-sm font-semibold text-stone-600 sm:col-span-3" (click)="cancelEdit()">Cancelar edición</button>
+    }
+  </form>
+
+  <div class="mt-8 grid gap-3">
+    @if (loading()) {
+      <p class="rounded-2xl bg-white p-5 text-stone-500">Cargando roles…</p>
+    } @else {
+      @for (role of roles(); track role.id) {
+        <article class="flex items-center justify-between gap-4 rounded-2xl bg-white p-5 shadow-sm">
+          <div><h2 class="font-semibold">{{ role.nombre }}</h2><p class="mt-1 text-sm text-stone-500">{{ role.descripcion || 'Sin descripción' }}</p></div>
+          <div class="shrink-0">
+            <button type="button" class="mr-3 text-sm font-semibold text-amber-700" (click)="edit(role)">Editar</button>
+            <button type="button" [disabled]="isProtected(role)" class="text-sm font-semibold text-red-700 disabled:cursor-not-allowed disabled:text-stone-300" (click)="deleteRole(role)">Eliminar</button>
+          </div>
+        </article>
+      }
+    }
+  </div>
+</section>

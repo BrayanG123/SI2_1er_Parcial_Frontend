@@ -1,0 +1,6 @@
+<select aria-label="Categoría" class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5" [value]="value()" (change)="valueChange.emit($any($event.target).value)">
+  <option value="">Selecciona una categoría</option>
+  @for (category of categories(); track category.id) {
+    <option [value]="category.id" [disabled]="!category.activa">{{ category.nombre }}{{ category.activa ? '' : ' (inactiva)' }}</option>
+  }
+</select>

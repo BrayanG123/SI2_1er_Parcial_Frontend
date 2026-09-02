@@ -1,0 +1,6 @@
+<select aria-label="Proveedor" class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5" [value]="value()" (change)="valueChange.emit($any($event.target).value)">
+  <option value="">Selecciona un proveedor</option>
+  @for (supplier of suppliers(); track supplier.id) {
+    <option [value]="supplier.id" [disabled]="!supplier.activo">{{ supplier.nombre }}{{ supplier.activo ? '' : ' (inactivo)' }}</option>
+  }
+</select>

@@ -1,0 +1,30 @@
+<section class="mx-auto w-full max-w-7xl px-5 py-10 lg:px-8">
+  <p class="text-sm font-semibold tracking-[0.2em] text-rose-700 uppercase">Colección actual</p>
+  <h1 class="mt-2 text-4xl font-bold tracking-tight">Catálogo de prendas</h1>
+  <p class="mt-3 text-stone-600">Explora productos, tallas, colores y temporadas disponibles.</p>
+
+  <form [formGroup]="filters" class="mt-8 grid gap-3 rounded-2xl bg-white p-5 shadow-sm sm:grid-cols-2 lg:grid-cols-6" (ngSubmit)="applyFilters()">
+    <input formControlName="q" placeholder="Buscar prenda o marca" aria-label="Buscar" class="rounded-xl border border-stone-300 px-3 py-2.5 sm:col-span-2" />
+    <select formControlName="category_id" aria-label="Categoría" class="rounded-xl border border-stone-300 px-3 py-2.5"><option value="">Todas las categorías</option>@for (item of categories(); track item.id) { <option [value]="item.id">{{ item.nombre }}</option> }</select>
+    <select formControlName="season_id" aria-label="Temporada" class="rounded-xl border border-stone-300 px-3 py-2.5"><option value="">Todas las temporadas</option>@for (item of seasons(); track item.id) { <option [value]="item.id">{{ item.nombre }}</option> }</select>
+    <select formControlName="size_id" aria-label="Talla" class="rounded-xl border border-stone-300 px-3 py-2.5"><option value="">Todas las tallas</option>@for (item of sizes(); track item.id) { <option [value]="item.id">{{ item.nombre }}</option> }</select>
+    <select formControlName="color_id" aria-label="Color" class="rounded-xl border border-stone-300 px-3 py-2.5"><option value="">Todos los colores</option>@for (item of colors(); track item.id) { <option [value]="item.id">{{ item.nombre }}</option> }</select>
+    <button class="rounded-xl bg-rose-700 px-4 py-2.5 font-semibold text-white sm:col-span-1">Filtrar</button>
+    <button type="button" class="rounded-xl border border-stone-300 px-4 py-2.5 font-semibold" (click)="clearFilters()">Limpiar</button>
+  </form>
+
+  @if (errorMessage()) { <p class="mt-6 rounded-xl bg-red-50 p-4 text-red-700" role="alert">{{ errorMessage() }}</p> }
+  @if (loading()) { <p class="py-16 text-center text-stone-500">Cargando catálogo…</p> }
+  @else if (products().length === 0) { <div class="mt-8 rounded-2xl border border-dashed border-stone-300 p-12 text-center text-stone-500">No encontramos prendas con estos filtros.</div> }
+  @else {
+    <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      @for (product of products(); track product.id) {
+        <a [routerLink]="['/catalogo', product.id]" class="group overflow-hidden rounded-2xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+          <div class="aspect-[4/5] bg-stone-200">@if (mainImage(product); as image) { <img [src]="image" [alt]="product.nombre" class="h-full w-full object-cover" /> } @else { <div class="grid h-full place-items-center text-stone-400">Sin imagen</div> }</div>
+          <div class="p-4"><p class="text-xs font-semibold tracking-wide text-rose-700 uppercase">{{ product.categoria.nombre }}</p><h2 class="mt-1 text-lg font-bold group-hover:text-rose-700">{{ product.nombre }}</h2><p class="mt-1 text-sm text-stone-500">{{ product.marca || product.proveedor.nombre }}</p><p class="mt-3 font-bold">Desde {{ price(product) | currency:'BOB':'symbol-narrow':'1.2-2' }}</p></div>
+        </a>
+      }
+    </div>
+  }
+  <div class="mt-8 flex items-center justify-between text-sm"><button [disabled]="page() === 1" class="font-semibold disabled:text-stone-300" (click)="changePage(-1)">Anterior</button><span>Página {{ page() }} · {{ total() }} prendas</span><button [disabled]="!hasNext()" class="font-semibold disabled:text-stone-300" (click)="changePage(1)">Siguiente</button></div>
+</section>

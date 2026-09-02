@@ -1,0 +1,102 @@
+<section>
+  <p class="text-sm font-semibold tracking-[0.18em] text-rose-700 uppercase">Organización</p>
+  <h1 class="mt-2 text-3xl font-bold">Ciudades y sucursales</h1>
+  <p class="mt-2 text-stone-600">Administra la ubicación, contacto, horario y disponibilidad de cada tienda.</p>
+
+  @if (errorMessage()) {
+    <p class="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">{{ errorMessage() }}</p>
+  }
+
+  <div class="mt-8 grid gap-8 xl:grid-cols-2">
+    <article class="rounded-2xl bg-white p-5 shadow-sm">
+      <h2 class="text-xl font-bold">Ciudades</h2>
+      <form [formGroup]="cityForm" class="mt-5 grid gap-3 sm:grid-cols-2" (ngSubmit)="saveCity()">
+        <input formControlName="nombre" placeholder="Nombre" aria-label="Nombre de ciudad" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+        <input formControlName="departamento" placeholder="Departamento (opcional)" aria-label="Departamento" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+        <button type="submit" [disabled]="savingCity()" class="rounded-xl bg-rose-700 px-4 py-2.5 font-semibold text-white">
+          {{ editingCityId() ? 'Guardar cambios' : 'Crear ciudad' }}
+        </button>
+        @if (editingCityId()) {
+          <button type="button" class="rounded-xl border border-stone-300 px-4 py-2.5 font-semibold" (click)="cancelCityEdit()">Cancelar</button>
+        }
+      </form>
+
+      <form class="mt-6 flex gap-2" (ngSubmit)="searchCities()">
+        <input [formControl]="citySearch" placeholder="Buscar ciudad" aria-label="Buscar ciudad" class="min-w-0 flex-1 rounded-xl border border-stone-300 px-3 py-2.5" />
+        <button class="rounded-xl bg-stone-900 px-4 py-2.5 font-semibold text-white">Buscar</button>
+      </form>
+
+      <div class="mt-4 divide-y divide-stone-100">
+        @if (loadingCities()) { <p class="py-5 text-stone-500">Cargando ciudades…</p> }
+        @else if (cities().length === 0) { <p class="py-5 text-stone-500">No se encontraron ciudades.</p> }
+        @else {
+          @for (city of cities(); track city.id) {
+            <div class="flex items-center justify-between gap-3 py-4">
+              <div><strong class="block">{{ city.nombre }}</strong><span class="text-sm text-stone-500">{{ city.departamento || 'Sin departamento' }}</span></div>
+              <div class="flex gap-3 text-sm font-semibold">
+                <button type="button" class="text-amber-700" (click)="editCity(city)">Editar</button>
+                <button type="button" class="text-red-700" (click)="deleteCity(city)">Eliminar</button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+      <div class="mt-4 flex items-center justify-between text-sm">
+        <button type="button" [disabled]="cityPage() === 1" class="font-semibold disabled:text-stone-300" (click)="changeCityPage(-1)">Anterior</button>
+        <span>Página {{ cityPage() }} · {{ cityTotal() }} registros</span>
+        <button type="button" [disabled]="!cityHasNext()" class="font-semibold disabled:text-stone-300" (click)="changeCityPage(1)">Siguiente</button>
+      </div>
+    </article>
+
+    <article class="rounded-2xl bg-white p-5 shadow-sm">
+      <h2 class="text-xl font-bold">Sucursales</h2>
+      <form [formGroup]="branchForm" class="mt-5 grid gap-3 sm:grid-cols-2" (ngSubmit)="saveBranch()">
+        <app-city-select [cities]="cityOptions()" [value]="branchForm.controls.ciudad_id.value" (valueChange)="branchForm.controls.ciudad_id.setValue($event)" />
+        <input formControlName="nombre" placeholder="Nombre" aria-label="Nombre de sucursal" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+        <input formControlName="direccion" placeholder="Dirección" aria-label="Dirección" class="rounded-xl border border-stone-300 px-3 py-2.5 sm:col-span-2" />
+        <input formControlName="telefono" placeholder="Teléfono (opcional)" aria-label="Teléfono" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+        <input formControlName="horario_informativo" placeholder="Horario informativo" aria-label="Horario informativo" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+        <button type="submit" [disabled]="savingBranch() || cityOptions().length === 0" class="rounded-xl bg-rose-700 px-4 py-2.5 font-semibold text-white disabled:bg-stone-300">
+          {{ editingBranchId() ? 'Guardar cambios' : 'Crear sucursal' }}
+        </button>
+        @if (editingBranchId()) {
+          <button type="button" class="rounded-xl border border-stone-300 px-4 py-2.5 font-semibold" (click)="cancelBranchEdit()">Cancelar</button>
+        }
+      </form>
+
+      <form class="mt-6 flex gap-2" (ngSubmit)="searchBranches()">
+        <input [formControl]="branchSearch" placeholder="Buscar sucursal" aria-label="Buscar sucursal" class="min-w-0 flex-1 rounded-xl border border-stone-300 px-3 py-2.5" />
+        <button class="rounded-xl bg-stone-900 px-4 py-2.5 font-semibold text-white">Buscar</button>
+      </form>
+
+      <div class="mt-4 divide-y divide-stone-100">
+        @if (loadingBranches()) { <p class="py-5 text-stone-500">Cargando sucursales…</p> }
+        @else if (branches().length === 0) { <p class="py-5 text-stone-500">No se encontraron sucursales.</p> }
+        @else {
+          @for (branch of branches(); track branch.id) {
+            <div class="py-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <strong>{{ branch.nombre }}</strong>
+                  <span [class]="branch.activa ? 'ml-2 text-xs text-emerald-700' : 'ml-2 text-xs text-red-700'">{{ branch.activa ? 'Activa' : 'Inactiva' }}</span>
+                  <p class="mt-1 text-sm text-stone-500">{{ branch.ciudad.nombre }} · {{ branch.direccion }}</p>
+                  <p class="text-sm text-stone-500">{{ branch.horario_informativo }}{{ branch.telefono ? ' · ' + branch.telefono : '' }}</p>
+                </div>
+              </div>
+              <div class="mt-3 flex flex-wrap gap-3 text-sm font-semibold">
+                <button type="button" class="text-amber-700" (click)="editBranch(branch)">Editar</button>
+                <button type="button" class="text-stone-700" (click)="toggleBranch(branch)">{{ branch.activa ? 'Desactivar' : 'Activar' }}</button>
+                <button type="button" class="text-red-700" (click)="deleteBranch(branch)">Eliminar</button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+      <div class="mt-4 flex items-center justify-between text-sm">
+        <button type="button" [disabled]="branchPage() === 1" class="font-semibold disabled:text-stone-300" (click)="changeBranchPage(-1)">Anterior</button>
+        <span>Página {{ branchPage() }} · {{ branchTotal() }} registros</span>
+        <button type="button" [disabled]="!branchHasNext()" class="font-semibold disabled:text-stone-300" (click)="changeBranchPage(1)">Siguiente</button>
+      </div>
+    </article>
+  </div>
+</section>

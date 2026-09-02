@@ -1,0 +1,25 @@
+<article class="flex items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+  <div>
+    <h2 class="font-semibold text-stone-900">{{ label() }}</h2>
+    <p class="mt-1 text-sm text-stone-500">{{ description() }}</p>
+  </div>
+
+  <span
+    class="inline-flex shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold"
+    [class.bg-amber-100]="state() === 'checking'"
+    [class.text-amber-800]="state() === 'checking'"
+    [class.bg-emerald-100]="state() === 'available'"
+    [class.text-emerald-800]="state() === 'available'"
+    [class.bg-red-100]="state() === 'unavailable'"
+    [class.text-red-800]="state() === 'unavailable'"
+  >
+    <span
+      class="size-2 rounded-full"
+      [class.animate-pulse]="state() === 'checking'"
+      [class.bg-amber-500]="state() === 'checking'"
+      [class.bg-emerald-500]="state() === 'available'"
+      [class.bg-red-500]="state() === 'unavailable'"
+    ></span>
+    {{ stateLabel() }}
+  </span>
+</article>

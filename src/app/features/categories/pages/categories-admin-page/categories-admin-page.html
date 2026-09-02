@@ -1,0 +1,34 @@
+<section>
+  <p class="text-sm font-semibold tracking-[0.18em] text-rose-700 uppercase">Catálogo</p>
+  <h1 class="mt-2 text-3xl font-bold">Categorías</h1>
+  <p class="mt-2 text-stone-600">Organiza las prendas en grupos reutilizables para el catálogo.</p>
+  @if (errorMessage()) { <p class="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">{{ errorMessage() }}</p> }
+
+  <form [formGroup]="form" class="mt-8 grid gap-4 rounded-2xl bg-white p-5 shadow-sm sm:grid-cols-2" (ngSubmit)="save()">
+    <input formControlName="nombre" placeholder="Nombre" aria-label="Nombre" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+    <input formControlName="descripcion" placeholder="Descripción (opcional)" aria-label="Descripción" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+    <button class="rounded-xl bg-rose-700 px-4 py-2.5 font-semibold text-white" [disabled]="saving()">{{ editingId() ? 'Guardar cambios' : 'Crear categoría' }}</button>
+    @if (editingId()) { <button type="button" class="rounded-xl border border-stone-300 px-4 py-2.5 font-semibold" (click)="cancelEdit()">Cancelar</button> }
+  </form>
+
+  <form class="mt-6 flex gap-2" (ngSubmit)="applySearch()">
+    <input [formControl]="search" placeholder="Buscar categoría" aria-label="Buscar categoría" class="min-w-0 flex-1 rounded-xl border border-stone-300 px-3 py-2.5" />
+    <button class="rounded-xl bg-stone-900 px-4 py-2.5 font-semibold text-white">Buscar</button>
+  </form>
+
+  <div class="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm">
+    @if (loading()) { <p class="p-6 text-stone-500">Cargando categorías…</p> }
+    @else if (items().length === 0) { <p class="p-6 text-stone-500">No se encontraron categorías.</p> }
+    @else {
+      <div class="divide-y divide-stone-100">
+        @for (item of items(); track item.id) {
+          <div class="flex flex-wrap items-center justify-between gap-4 p-5">
+            <div><strong>{{ item.nombre }}</strong><span [class]="item.activa ? 'ml-2 text-xs text-emerald-700' : 'ml-2 text-xs text-red-700'">{{ item.activa ? 'Activa' : 'Inactiva' }}</span><p class="mt-1 text-sm text-stone-500">{{ item.descripcion || 'Sin descripción' }}</p></div>
+            <div class="flex gap-3 text-sm font-semibold"><button class="text-amber-700" (click)="edit(item)">Editar</button><button class="text-stone-700" (click)="toggle(item)">{{ item.activa ? 'Desactivar' : 'Activar' }}</button><button class="text-red-700" (click)="remove(item)">Eliminar</button></div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+  <div class="mt-4 flex justify-between text-sm"><button [disabled]="page() === 1" class="font-semibold disabled:text-stone-300" (click)="changePage(-1)">Anterior</button><span>Página {{ page() }} · {{ total() }} registros</span><button [disabled]="!hasNext()" class="font-semibold disabled:text-stone-300" (click)="changePage(1)">Siguiente</button></div>
+</section>

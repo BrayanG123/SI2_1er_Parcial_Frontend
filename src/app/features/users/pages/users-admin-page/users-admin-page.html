@@ -1,0 +1,57 @@
+<section>
+  <p class="text-sm font-semibold tracking-[0.18em] text-rose-700 uppercase">Seguridad</p>
+  <h1 class="mt-2 text-3xl font-bold">Usuarios</h1>
+  <p class="mt-2 text-stone-600">Crea cuentas internas, asigna roles y controla su acceso.</p>
+
+  @if (errorMessage()) {
+    <p class="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">{{ errorMessage() }}</p>
+  }
+
+  <form [formGroup]="form" class="mt-8 grid gap-4 rounded-2xl bg-white p-5 shadow-sm sm:grid-cols-2 lg:grid-cols-6" (ngSubmit)="createUser()">
+    <input formControlName="nombres" placeholder="Nombres" aria-label="Nombres" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+    <input formControlName="apellidos" placeholder="Apellidos" aria-label="Apellidos" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+    <input type="email" formControlName="email" placeholder="Correo" aria-label="Correo" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+    <input type="password" formControlName="password" placeholder="Contraseña" aria-label="Contraseña" class="rounded-xl border border-stone-300 px-3 py-2.5" />
+    <select formControlName="role" aria-label="Rol" class="rounded-xl border border-stone-300 px-3 py-2.5">
+      @for (role of roles(); track role.id) {
+        <option [value]="role.nombre">{{ role.nombre }}</option>
+      }
+    </select>
+    <app-branch-select
+      [branches]="branches()"
+      [value]="form.controls.branchId.value"
+      (valueChange)="form.controls.branchId.setValue($event ?? '')"
+    />
+    <button type="submit" [disabled]="saving()" class="rounded-xl bg-rose-700 px-4 py-2.5 font-semibold text-white sm:col-span-2 lg:col-span-6">
+      {{ saving() ? 'Guardando…' : 'Crear usuario' }}
+    </button>
+  </form>
+
+  <div class="mt-8 overflow-x-auto rounded-2xl bg-white shadow-sm">
+    @if (loading()) {
+      <p class="p-6 text-stone-500">Cargando usuarios…</p>
+    } @else if (users().length === 0) {
+      <p class="p-6 text-stone-500">Todavía no existen usuarios.</p>
+    } @else {
+      <table class="w-full min-w-3xl text-left text-sm">
+        <thead class="border-b border-stone-200 bg-stone-50 text-xs text-stone-500 uppercase">
+          <tr><th class="p-4">Usuario</th><th class="p-4">Roles</th><th class="p-4">Sucursal</th><th class="p-4">Estado</th><th class="p-4">Acciones</th></tr>
+        </thead>
+        <tbody class="divide-y divide-stone-100">
+          @for (user of users(); track user.id) {
+            <tr>
+              <td class="p-4"><strong class="block">{{ user.nombres }} {{ user.apellidos }}</strong><span class="text-stone-500">{{ user.email }}</span></td>
+              <td class="p-4">@for (role of user.roles; track role.id) { <span class="mr-1 rounded-full bg-stone-100 px-2 py-1 text-xs">{{ role.nombre }}</span> }</td>
+              <td class="p-4 text-stone-600">{{ branchName(user.sucursal_id) }}</td>
+              <td class="p-4"><span [class]="user.activo ? 'text-emerald-700' : 'text-red-700'">{{ user.activo ? 'Activo' : 'Inactivo' }}</span></td>
+              <td class="p-4">
+                <button type="button" class="mr-3 font-semibold text-amber-700" (click)="toggleActive(user)">{{ user.activo ? 'Desactivar' : 'Activar' }}</button>
+                <button type="button" class="font-semibold text-red-700" (click)="deleteUser(user)">Eliminar</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</section>

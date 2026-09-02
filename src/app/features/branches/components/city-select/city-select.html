@@ -1,0 +1,12 @@
+<select
+  aria-label="Ciudad"
+  class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5"
+  [value]="value()"
+  [disabled]="disabled()"
+  (change)="valueChange.emit($any($event.target).value)"
+>
+  <option value="">Selecciona una ciudad</option>
+  @for (city of cities(); track city.id) {
+    <option [value]="city.id">{{ city.nombre }}</option>
+  }
+</select>

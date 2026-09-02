@@ -1,0 +1,58 @@
+<div class="min-h-dvh bg-stone-100 text-stone-900 lg:grid lg:grid-cols-[250px_1fr]">
+  <aside class="bg-stone-950 px-5 py-6 text-white lg:min-h-dvh">
+    <a routerLink="/" class="text-lg font-bold">Ropa · Administración</a>
+    <nav class="mt-8 flex gap-2 lg:flex-col" aria-label="Administración">
+      @if (isAdmin()) {
+      <a
+        routerLink="/admin/usuarios"
+        routerLinkActive="bg-rose-700 text-white"
+        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
+      >Usuarios</a>
+      <a
+        routerLink="/admin/roles"
+        routerLinkActive="bg-rose-700 text-white"
+        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
+      >Roles</a>
+      <a
+        routerLink="/admin/sucursales"
+        routerLinkActive="bg-rose-700 text-white"
+        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
+      >Ciudades y sucursales</a>
+      <a
+        routerLink="/admin/categorias"
+        routerLinkActive="bg-rose-700 text-white"
+        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
+      >Categorías</a>
+      <a
+        routerLink="/admin/proveedores"
+        routerLinkActive="bg-rose-700 text-white"
+        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
+      >Proveedores</a>
+      <a
+        routerLink="/admin/catalogo"
+        routerLinkActive="bg-rose-700 text-white"
+        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
+      >Catálogo</a>
+      }
+      <a
+        routerLink="/inventario"
+        routerLinkActive="bg-rose-700 text-white"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
+      >Inventario</a>
+    </nav>
+  </aside>
+
+  <div>
+    <header class="flex items-center justify-between border-b border-stone-200 bg-white px-5 py-4 lg:px-8">
+      <div>
+        <p class="text-sm font-semibold">{{ auth.user()?.nombres }} {{ auth.user()?.apellidos }}</p>
+        <p class="text-xs text-stone-500">{{ roleLabel() }}</p>
+      </div>
+      <button type="button" class="text-sm font-semibold text-rose-700" (click)="logout()">
+        Cerrar sesión
+      </button>
+    </header>
+    <main class="p-5 lg:p-8"><router-outlet /></main>
+  </div>
+</div>
