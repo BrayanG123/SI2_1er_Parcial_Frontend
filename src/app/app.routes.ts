@@ -50,6 +50,44 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/catalog/catalog.routes').then((routes) => routes.CATALOG_ROUTES),
       },
+      {
+        path: 'carrito',
+        title: 'Carrito | Tienda de ropa',
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['cliente'] },
+        loadChildren: () =>
+          import('./features/cart/cart.routes').then((routes) => routes.CART_ROUTES),
+      },
+      {
+        path: 'pedidos',
+        title: 'Mis pedidos | Tienda de ropa',
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['cliente'] },
+        loadChildren: () =>
+          import('./features/orders/orders.routes').then(
+            (routes) => routes.CUSTOMER_ORDER_ROUTES,
+          ),
+      },
+      {
+        path: 'reservas',
+        title: 'Mis reservas | Tienda de ropa',
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['cliente'] },
+        loadChildren: () =>
+          import('./features/reservations/reservations.routes').then(
+            (routes) => routes.RESERVATION_ROUTES,
+          ),
+      },
+      {
+        path: 'devoluciones',
+        title: 'Mis devoluciones | Tienda de ropa',
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['cliente'] },
+        loadChildren: () =>
+          import('./features/returns/returns.routes').then(
+            (routes) => routes.CUSTOMER_RETURN_ROUTES,
+          ),
+      },
     ],
   },
   {
@@ -125,6 +163,80 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/inventory/inventory.routes').then(
             (routes) => routes.INVENTORY_ROUTES,
+          ),
+      },
+    ],
+  },
+  {
+    path: 'reservas/sucursal',
+    title: 'Reservas de sucursal | Tienda de ropa',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['administrador', 'encargado'] },
+    loadComponent: () =>
+      import('./layouts/admin-layout/admin-layout').then(
+        (component) => component.AdminLayout,
+      ),
+    children: [
+      {
+        path: '',
+        loadChildren: () =>
+          import('./features/reservations/reservations.routes').then(
+            (routes) => routes.BRANCH_RESERVATION_ROUTES,
+          ),
+      },
+    ],
+  },
+  {
+    path: 'pedidos/gestion',
+    title: 'Gestión de pedidos | Tienda de ropa',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['administrador', 'encargado', 'cajero'] },
+    loadComponent: () =>
+      import('./layouts/admin-layout/admin-layout').then(
+        (component) => component.AdminLayout,
+      ),
+    children: [
+      {
+        path: '',
+        loadChildren: () =>
+          import('./features/orders/orders.routes').then(
+            (routes) => routes.MANAGE_ORDER_ROUTES,
+          ),
+      },
+    ],
+  },
+  {
+    path: 'pos',
+    title: 'Punto de venta | Tienda de ropa',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['administrador', 'cajero'] },
+    loadComponent: () =>
+      import('./layouts/admin-layout/admin-layout').then(
+        (component) => component.AdminLayout,
+      ),
+    children: [
+      {
+        path: '',
+        loadChildren: () =>
+          import('./features/orders/orders.routes').then((routes) => routes.POS_ROUTES),
+      },
+    ],
+  },
+  {
+    path: 'devoluciones/gestion',
+    title: 'Gestión de devoluciones | Tienda de ropa',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['administrador', 'encargado'] },
+    loadComponent: () =>
+      import('./layouts/admin-layout/admin-layout').then(
+        (component) => component.AdminLayout,
+      ),
+    children: [
+      {
+        path: '',
+        loadChildren: () =>
+          import('./features/returns/returns.routes').then(
+            (routes) => routes.MANAGE_RETURN_ROUTES,
           ),
       },
     ],

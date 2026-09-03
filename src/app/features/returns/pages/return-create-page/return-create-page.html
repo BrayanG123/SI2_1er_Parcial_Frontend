@@ -1,0 +1,22 @@
+<section class="mx-auto w-full max-w-4xl px-5 py-10 lg:px-8">
+  <a routerLink="/pedidos" class="text-sm font-semibold text-rose-700">← Volver a mis pedidos</a>
+  <h1 class="mt-5 text-3xl font-bold">Solicitar devolución</h1>
+  <p class="mt-2 text-stone-600">Selecciona las prendas y cantidades. El backend impedirá devolver más de lo comprado o solicitado anteriormente.</p>
+  @if (errorMessage()) { <p class="mt-5 rounded-xl bg-red-50 p-4 text-red-700" role="alert">{{ errorMessage() }}</p> }
+  @if (loading()) {
+    <p class="py-16 text-center text-stone-500">Cargando pedido…</p>
+  } @else if (order(); as current) {
+    <form [formGroup]="form" class="mt-7 space-y-4" (ngSubmit)="submit()">
+      <div class="rounded-2xl bg-white p-5 shadow-sm"><p class="text-xs font-semibold text-rose-700 uppercase">{{ current.numero }} · {{ current.estado }}</p><p class="mt-1 text-xl font-bold">{{ current.total | currency:'BOB':'symbol-narrow':'1.2-2' }}</p></div>
+      @for (detail of current.detalles; track detail.id) {
+        <article class="grid gap-3 rounded-2xl bg-white p-5 shadow-sm md:grid-cols-[1fr_110px_1fr] md:items-center">
+          <div><strong>{{ detail.producto_nombre }}</strong><p class="text-sm text-stone-500">{{ detail.talla }} · {{ detail.color }} · {{ detail.sku }} · compradas: {{ detail.cantidad }}</p><p class="mt-1 text-sm font-semibold">{{ detail.precio_unitario | currency:'BOB':'symbol-narrow':'1.2-2' }} c/u</p></div>
+          <label class="text-xs font-semibold text-stone-500">Cantidad<input type="number" min="0" [max]="detail.cantidad" value="0" class="mt-1 w-full rounded-xl border px-3 py-2 text-stone-900" (change)="setQuantity(detail.id, detail.cantidad, $event)" /></label>
+          <label class="text-xs font-semibold text-stone-500">Motivo de la prenda<input maxlength="500" class="mt-1 w-full rounded-xl border px-3 py-2 text-stone-900" placeholder="Opcional" (input)="setMotive(detail.id, $event)" /></label>
+        </article>
+      }
+      <label class="block rounded-2xl bg-white p-5 text-sm font-semibold shadow-sm">Motivo general<textarea formControlName="motivo_general" rows="3" maxlength="500" class="mt-2 w-full rounded-xl border px-3 py-2 font-normal" placeholder="Describe brevemente la solicitud"></textarea></label>
+      <button [disabled]="saving()" class="w-full rounded-xl bg-rose-700 px-5 py-3 font-semibold text-white disabled:opacity-50">{{ saving() ? 'Enviando…' : 'Solicitar devolución' }}</button>
+    </form>
+  }
+</section>

@@ -1,0 +1,30 @@
+<section class="mx-auto w-full max-w-5xl px-5 py-10 lg:px-8">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div><p class="text-sm font-semibold tracking-[0.18em] text-rose-700 uppercase">Mi cuenta</p><h1 class="mt-2 text-3xl font-bold">Mis pedidos</h1><p class="mt-2 text-stone-600">Precios históricos y detalle de tus compras web o asociadas a reservas.</p></div>
+    <a routerLink="/carrito" class="rounded-xl bg-rose-700 px-5 py-3 font-semibold text-white">Ir al carrito</a>
+  </div>
+  @if (errorMessage()) { <p class="mt-5 rounded-xl bg-red-50 p-4 text-red-700" role="alert">{{ errorMessage() }}</p> }
+  <div class="mt-7 space-y-4">
+    @if (loading()) {
+      <p class="py-12 text-center text-stone-500">Cargando pedidos…</p>
+    } @else if (items().length === 0) {
+      <p class="rounded-2xl bg-white p-8 text-center text-stone-500 shadow-sm">Aún no tienes pedidos.</p>
+    } @else {
+      @for (order of items(); track order.id) {
+        <article class="rounded-2xl bg-white p-5 shadow-sm print:shadow-none">
+          <div class="flex flex-wrap justify-between gap-3"><div><p class="text-xs font-semibold text-rose-700 uppercase">{{ order.canal }} · {{ order.estado }}</p><h2 class="mt-1 text-xl font-bold">{{ order.numero }}</h2><p class="text-sm text-stone-500">{{ order.creado_en | date:'medium' }} · {{ order.sucursal.nombre }}</p></div><strong class="text-xl">{{ order.total | currency:'BOB':'symbol-narrow':'1.2-2' }}</strong></div>
+          <ul class="mt-4 divide-y divide-stone-100">@for (detail of order.detalles; track detail.id) { <li class="flex justify-between gap-4 py-3 text-sm"><span><strong>{{ detail.producto_nombre }}</strong><br /><span class="text-stone-500">{{ detail.talla }} · {{ detail.color }} · {{ detail.sku }} × {{ detail.cantidad }}</span></span><strong>{{ detail.subtotal | currency:'BOB':'symbol-narrow':'1.2-2' }}</strong></li> }</ul>
+          <div class="mt-4 flex flex-wrap gap-4 print:hidden">
+            <button class="text-sm font-semibold text-stone-700" (click)="print()">Imprimir comprobante</button>
+            @if (order.estado === 'CREADO' && order.canal !== 'POS') {
+              <a [routerLink]="['/pedidos', order.id, 'pago']" class="text-sm font-semibold text-emerald-700">Pagar en ambiente de prueba</a>
+            }
+            @if (order.estado === 'PAGADO' || order.estado === 'COMPLETADO') {
+              <a [routerLink]="['/pedidos', order.id, 'devolucion']" class="text-sm font-semibold text-rose-700">Solicitar devolución</a>
+            }
+          </div>
+        </article>
+      }
+    }
+  </div>
+</section>

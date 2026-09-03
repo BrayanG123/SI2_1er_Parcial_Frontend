@@ -1,0 +1,18 @@
+<section>
+  <p class="text-sm font-semibold tracking-[0.18em] text-rose-700 uppercase">Sucursal</p><h1 class="mt-2 text-3xl font-bold">Bandeja de reservas</h1><p class="mt-2 text-stone-600">Esta bandeja es la notificación interna de nuevas reservas para preparar.</p>
+  @if (errorMessage()) { <p class="mt-5 rounded-xl bg-red-50 p-4 text-red-700" role="alert">{{ errorMessage() }}</p> }
+  <form [formGroup]="filters" class="mt-6 grid gap-3 rounded-2xl bg-white p-5 shadow-sm sm:grid-cols-4" (ngSubmit)="applyFilters()">
+    <select formControlName="state" class="rounded-xl border border-stone-300 px-3 py-2.5"><option value="">Todos los estados</option><option value="PENDIENTE">Pendiente</option><option value="CONFIRMADA">Confirmada</option><option value="PREPARADA">Preparada</option><option value="COMPLETADA">Completada</option><option value="CANCELADA">Cancelada</option><option value="VENCIDA">Vencida</option></select>
+    <input type="date" formControlName="visit_from" class="rounded-xl border border-stone-300 px-3 py-2.5" aria-label="Visita desde" />
+    <input type="date" formControlName="visit_to" class="rounded-xl border border-stone-300 px-3 py-2.5" aria-label="Visita hasta" />
+    <div class="flex gap-2"><button class="flex-1 rounded-xl bg-stone-900 px-4 py-2.5 font-semibold text-white">Filtrar</button><button type="button" class="rounded-xl border border-stone-300 px-3" (click)="clearFilters()">Limpiar</button></div>
+  </form>
+  <div class="mt-6 space-y-4">
+    @if (loading()) { <p class="py-12 text-center text-stone-500">Cargando reservas…</p> }
+    @else if (items().length === 0) { <p class="rounded-2xl bg-white p-8 text-center text-stone-500 shadow-sm">No existen reservas con estos filtros.</p> }
+    @else { @for (item of items(); track item.id) {
+      <article class="rounded-2xl bg-white p-5 shadow-sm"><div class="flex flex-wrap justify-between gap-4"><div><p class="text-xs font-semibold text-rose-700 uppercase">{{ item.estado }} · {{ item.sucursal.nombre }}</p><h2 class="mt-1 text-lg font-bold">{{ item.cliente.nombres }} {{ item.cliente.apellidos }}</h2><p class="text-sm text-stone-500">{{ item.cliente.email }} · visita {{ (item.fecha_visita + 'T12:00:00') | date:'mediumDate' }}{{ item.hora_aproximada ? ' a las ' + item.hora_aproximada.slice(0, 5) : '' }}</p></div><div class="flex items-start gap-2">@if (nextStatus(item.estado)) { <button class="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white" (click)="transition(item)">{{ actionLabel(item.estado) }}</button> } @if (nextStatus(item.estado)) { <button class="rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-700" (click)="cancel(item)">Cancelar</button> }</div></div>
+      <ul class="mt-4 grid gap-2 sm:grid-cols-2">@for (detail of item.detalles; track detail.id) { <li class="rounded-xl bg-stone-50 p-3 text-sm"><strong>{{ detail.producto_nombre }} × {{ detail.cantidad }}</strong><p class="text-stone-500">{{ detail.talla }} · {{ detail.color }} · {{ detail.sku }}</p></li> }</ul></article>
+    } }
+  </div>
+</section>

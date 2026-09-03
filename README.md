@@ -67,9 +67,35 @@ autoridad al backend; el frontend solo presenta el estado recibido por la API.
   productos, variantes e imágenes por URL.
 - `/inventario`: panel de existencias, filtros, recepción, ajustes e historial;
   admite administrador, encargado y cajero, con acciones según el rol.
+- `/reservas/nueva`: confirma una selección de varias prendas pertenecientes a
+  una única sucursal, con fecha y hora aproximada de visita.
+- `/reservas`: historial y cancelación de reservas del cliente.
+- `/reservas/sucursal`: bandeja interna para confirmar, preparar, completar o
+  cancelar reservas; admite administrador y encargado.
+- `/carrito`: edición de prendas, resumen y confirmación del pedido web; admite
+  clientes autenticados.
+- `/pedidos`: historial del cliente con detalle y comprobante imprimible.
+- `/pedidos/gestion`: consulta operativa por sucursal, canal, estado y fechas;
+  admite administrador, encargado y cajero con alcance aplicado por backend.
+- `/pos`: búsqueda de existencias por SKU, venta con cliente opcional y
+  comprobante imprimible; admite administrador y cajero.
+- `/pedidos/:id/pago`: inicio y confirmación de la pasarela simulada, marcada
+  claramente como ambiente de prueba y sin campos financieros sensibles.
+- `/pedidos/:id/devolucion`: selección de detalles, cantidades y motivos para
+  solicitar una devolución parcial.
+- `/devoluciones`: historial del cliente, cancelación de solicitudes pendientes
+  y estado del reembolso.
+- `/devoluciones/gestion`: aprobación, cancelación y finalización con decisiones
+  explícitas de reposición y reembolso; admite administrador y encargado.
 
 El detalle de `/catalogo/:id` consulta la disponibilidad de la variante
-seleccionada y la presenta por sucursal.
+seleccionada, la presenta por sucursal y permite añadirla a un borrador de
+reserva conservado en `sessionStorage`.
+
+Los totales visibles del carrito y POS ayudan a la interacción, pero el pedido
+solo usa los precios, disponibilidad y totales recalculados por FastAPI. Desde
+“Mis reservas” el cliente puede escoger cuántas unidades reservadas comprar;
+las no elegidas se liberan automáticamente al completar la conversión.
 
 El JWT se conserva en `sessionStorage`, se adjunta mediante un interceptor y se
 elimina al cerrar sesión o cuando `/auth/me` rechaza la restauración. Las rutas

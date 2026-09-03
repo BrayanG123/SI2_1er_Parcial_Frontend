@@ -8,7 +8,7 @@
       <div class="self-center"><p class="text-sm font-semibold text-rose-700">{{ item.categoria.nombre }}{{ item.temporada ? ' · ' + item.temporada.nombre : '' }}</p><h1 class="mt-2 text-4xl font-bold">{{ item.nombre }}</h1><p class="mt-2 text-stone-500">{{ item.marca || item.proveedor.nombre }}</p><p class="mt-6 text-3xl font-bold">{{ effectivePrice() | currency:'BOB':'symbol-narrow':'1.2-2' }}</p><p class="mt-5 leading-7 text-stone-600">{{ item.descripcion || 'Sin descripción adicional.' }}</p>
         <div class="mt-8"><p class="mb-3 font-semibold">Talla</p><div class="flex flex-wrap gap-2">@for (size of sizes(); track size.id) { <button class="rounded-xl border px-4 py-2 text-sm font-semibold" [class.bg-stone-900]="selectedSize() === size.id" [class.text-white]="selectedSize() === size.id" (click)="selectSize(size.id)">{{ size.nombre }}</button> }</div></div>
         <div class="mt-6"><p class="mb-3 font-semibold">Color</p><div class="flex flex-wrap gap-2">@for (color of colors(); track color.id) { <button class="flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold" [class.border-rose-700]="selectedColor() === color.id" (click)="selectedColor.set(color.id)">@if (color.codigo_hex) { <span class="size-4 rounded-full border" [style.background]="color.codigo_hex"></span> }{{ color.nombre }}</button> }</div></div>
-        @if (variant(); as selected) { <p class="mt-6 rounded-xl bg-stone-100 p-4 text-sm">SKU: <strong>{{ selected.sku }}</strong></p> }
+        @if (variant(); as selected) { <div class="mt-6 flex items-center justify-between gap-3 rounded-xl bg-stone-100 p-4 text-sm"><span>SKU: <strong>{{ selected.sku }}</strong></span><button [disabled]="totalAvailable() === 0" class="rounded-lg bg-stone-900 px-4 py-2 font-semibold text-white disabled:opacity-40" (click)="addToCart()">Agregar al carrito</button></div> }
         @if (variant()) {
           <div class="mt-6 rounded-2xl border border-stone-200 p-5">
             <div class="flex items-center justify-between gap-3">
@@ -22,12 +22,13 @@
                 @for (stock of selectedAvailability(); track stock.sucursal_id) {
                   <div class="flex items-center justify-between py-3 text-sm">
                     <div><strong>{{ stock.sucursal_nombre }}</strong><p class="text-xs text-stone-500">{{ stock.ciudad_nombre }}</p></div>
-                    <span class="font-bold" [class.text-red-700]="stock.stock_disponible === 0" [class.text-emerald-700]="stock.stock_disponible > 0">{{ stock.stock_disponible }}</span>
+                    <div class="flex items-center gap-3"><span class="font-bold" [class.text-red-700]="stock.stock_disponible === 0" [class.text-emerald-700]="stock.stock_disponible > 0">{{ stock.stock_disponible }}</span>@if (stock.stock_disponible > 0) { <button class="rounded-lg bg-rose-700 px-3 py-2 text-xs font-semibold text-white" (click)="addToReservation(stock)">Reservar aquí</button> }</div>
                   </div>
                 }
               }
             </div>
           </div>
+          <a routerLink="/reservas/nueva" class="mt-4 inline-block text-sm font-semibold text-rose-700">Revisar selección de reserva →</a>
         }
       </div>
     </div>

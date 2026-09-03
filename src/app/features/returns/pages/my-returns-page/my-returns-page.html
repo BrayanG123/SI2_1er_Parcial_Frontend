@@ -1,0 +1,20 @@
+<section class="mx-auto w-full max-w-5xl px-5 py-10 lg:px-8">
+  <div class="flex flex-wrap items-end justify-between gap-4"><div><p class="text-sm font-semibold tracking-[0.18em] text-rose-700 uppercase">Mi cuenta</p><h1 class="mt-2 text-3xl font-bold">Mis devoluciones</h1><p class="mt-2 text-stone-600">Seguimiento de solicitudes, reposición y reembolsos.</p></div><a routerLink="/pedidos" class="rounded-xl bg-rose-700 px-5 py-3 font-semibold text-white">Ver pedidos</a></div>
+  @if (errorMessage()) { <p class="mt-5 rounded-xl bg-red-50 p-4 text-red-700" role="alert">{{ errorMessage() }}</p> }
+  <div class="mt-7 space-y-4">
+    @if (loading()) {
+      <p class="py-12 text-center text-stone-500">Cargando devoluciones…</p>
+    } @else if (items().length === 0) {
+      <p class="rounded-2xl bg-white p-8 text-center text-stone-500 shadow-sm">Aún no tienes solicitudes de devolución.</p>
+    } @else {
+      @for (item of items(); track item.id) {
+        <article class="rounded-2xl bg-white p-5 shadow-sm">
+          <div class="flex flex-wrap justify-between gap-3"><div><p class="text-xs font-semibold text-rose-700 uppercase">{{ item.estado }}</p><h2 class="mt-1 text-xl font-bold">{{ item.pedido.numero }}</h2><p class="text-sm text-stone-500">{{ item.creada_en | date:'medium' }} · {{ item.pedido.sucursal.nombre }}</p></div><strong>{{ item.monto_estimado | currency:'BOB':'symbol-narrow':'1.2-2' }}</strong></div>
+          <ul class="mt-4 divide-y divide-stone-100">@for (detail of item.detalles; track detail.id) { <li class="flex justify-between gap-4 py-3 text-sm"><span><strong>{{ detail.producto_nombre }}</strong><br /><span class="text-stone-500">{{ detail.talla }} · {{ detail.color }} · {{ detail.sku }} × {{ detail.cantidad }}</span></span><strong>{{ detail.subtotal | currency:'BOB':'symbol-narrow':'1.2-2' }}</strong></li> }</ul>
+          @if (item.reembolso; as refund) { <div class="mt-4 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-800"><strong>Reembolso {{ refund.estado }}</strong> · {{ refund.monto | currency:'BOB':'symbol-narrow':'1.2-2' }}<br /><span class="font-mono text-xs">{{ refund.referencia_externa }}</span></div> }
+          @if (item.estado === 'SOLICITADA') { <button class="mt-4 text-sm font-semibold text-red-700" (click)="cancel(item)">Cancelar solicitud</button> }
+        </article>
+      }
+    }
+  </div>
+</section>

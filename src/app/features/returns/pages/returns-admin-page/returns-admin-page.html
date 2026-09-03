@@ -1,0 +1,37 @@
+<section>
+  <p class="text-sm font-semibold tracking-[0.18em] text-rose-700 uppercase">Operaciones</p>
+  <h1 class="mt-2 text-3xl font-bold">Gestión de devoluciones</h1>
+  <p class="mt-2 text-stone-600">Aprueba solicitudes y decide si la finalización repone inventario y genera reembolso.</p>
+  @if (errorMessage()) { <p class="mt-5 rounded-xl bg-red-50 p-4 text-red-700" role="alert">{{ errorMessage() }}</p> }
+
+  <div class="mt-6 grid gap-4 xl:grid-cols-[1fr_auto]">
+    <form [formGroup]="filters" class="grid gap-3 rounded-2xl bg-white p-5 shadow-sm sm:grid-cols-3" (ngSubmit)="load()">
+      <select formControlName="branch_id" class="rounded-xl border px-3 py-2.5"><option value="">Todas las sucursales</option>@for (branch of options().sucursales; track branch.id) { <option [value]="branch.id">{{ branch.nombre }}</option> }</select>
+      <select formControlName="state" class="rounded-xl border px-3 py-2.5"><option value="">Todos los estados</option><option value="SOLICITADA">Solicitada</option><option value="APROBADA">Aprobada</option><option value="COMPLETADA">Completada</option><option value="CANCELADA">Cancelada</option></select>
+      <div class="flex gap-2"><button class="flex-1 rounded-xl bg-stone-900 px-4 py-2.5 font-semibold text-white">Filtrar</button><button type="button" class="rounded-xl border px-4" (click)="clear()">Limpiar</button></div>
+    </form>
+    <form [formGroup]="completion" class="rounded-2xl bg-amber-50 p-5 text-sm shadow-sm"><p class="mb-2 font-bold">Al completar</p><label class="mr-4"><input type="checkbox" formControlName="reingresar_stock" class="mr-2" />Reingresar stock</label><label><input type="checkbox" formControlName="generar_reembolso" class="mr-2" />Generar reembolso</label></form>
+  </div>
+
+  <div class="mt-6 space-y-4">
+    @if (loading()) {
+      <p class="py-12 text-center text-stone-500">Cargando devoluciones…</p>
+    } @else if (items().length === 0) {
+      <p class="rounded-2xl bg-white p-8 text-center text-stone-500 shadow-sm">No existen devoluciones con esos filtros.</p>
+    } @else {
+      @for (item of items(); track item.id) {
+        <article class="rounded-2xl bg-white p-5 shadow-sm">
+          <div class="flex flex-wrap justify-between gap-3"><div><p class="text-xs font-semibold text-rose-700 uppercase">{{ item.estado }}</p><h2 class="mt-1 text-xl font-bold">{{ item.pedido.numero }}</h2><p class="text-sm text-stone-500">{{ item.creada_en | date:'short' }} · {{ item.pedido.sucursal.nombre }} · {{ item.cliente ? item.cliente.nombres + ' ' + item.cliente.apellidos : 'Consumidor final' }}</p></div><strong>{{ item.monto_estimado | currency:'BOB':'symbol-narrow':'1.2-2' }}</strong></div>
+          @if (item.motivo_general) { <p class="mt-3 rounded-xl bg-stone-50 p-3 text-sm">{{ item.motivo_general }}</p> }
+          <ul class="mt-3 divide-y">@for (detail of item.detalles; track detail.id) { <li class="flex justify-between gap-4 py-3 text-sm"><span>{{ detail.producto_nombre }} · {{ detail.sku }} × {{ detail.cantidad }}<br /><span class="text-stone-500">{{ detail.motivo || 'Sin motivo por prenda' }}</span></span><strong>{{ detail.subtotal | currency:'BOB':'symbol-narrow':'1.2-2' }}</strong></li> }</ul>
+          @if (item.reembolso; as refund) { <p class="mt-3 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">Reembolso {{ refund.estado }} · {{ refund.monto | currency:'BOB':'symbol-narrow':'1.2-2' }}</p> }
+          <div class="mt-4 flex flex-wrap gap-4">
+            @if (item.estado === 'SOLICITADA') { <button [disabled]="actionId() === item.id" class="text-sm font-semibold text-emerald-700" (click)="transition(item, 'APROBADA')">Aprobar</button> }
+            @if (item.estado === 'APROBADA') { <button [disabled]="actionId() === item.id" class="text-sm font-semibold text-emerald-700" (click)="transition(item, 'COMPLETADA')">Completar</button> }
+            @if (item.estado === 'SOLICITADA' || item.estado === 'APROBADA') { <button [disabled]="actionId() === item.id" class="text-sm font-semibold text-red-700" (click)="transition(item, 'CANCELADA')">Cancelar</button> }
+          </div>
+        </article>
+      }
+    }
+  </div>
+</section>
