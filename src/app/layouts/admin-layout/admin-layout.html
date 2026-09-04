@@ -56,6 +56,12 @@
       >Pedidos y ventas</a>
       @if (auth.hasAnyRole(['administrador', 'encargado'])) {
       <a
+        routerLink="/reportes"
+        routerLinkActive="bg-rose-700 text-white"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
+      >Reportes</a>
+      <a
         routerLink="/devoluciones/gestion"
         routerLinkActive="bg-rose-700 text-white"
         [routerLinkActiveOptions]="{ exact: true }"

@@ -79,14 +79,17 @@ autoridad al backend; el frontend solo presenta el estado recibido por la API.
   admite administrador, encargado y cajero con alcance aplicado por backend.
 - `/pos`: búsqueda de existencias por SKU, venta con cliente opcional y
   comprobante imprimible; admite administrador y cajero.
-- `/pedidos/:id/pago`: inicio y confirmación de la pasarela simulada, marcada
-  claramente como ambiente de prueba y sin campos financieros sensibles.
+- `/pedidos/:id/pago`: pago real mediante Stripe Payment Element cuando el
+  backend usa `PAYMENT_GATEWAY_PROVIDER=stripe`; el adaptador de prueba continúa
+  disponible y se identifica explícitamente como simulación.
 - `/pedidos/:id/devolucion`: selección de detalles, cantidades y motivos para
   solicitar una devolución parcial.
 - `/devoluciones`: historial del cliente, cancelación de solicitudes pendientes
   y estado del reembolso.
 - `/devoluciones/gestion`: aprobación, cancelación y finalización con decisiones
   explícitas de reposición y reembolso; admite administrador y encargado.
+- `/reportes`: dashboard de ventas, inventario, reservas y devoluciones con
+  filtros por período y sucursal; admite administrador y encargado.
 
 El detalle de `/catalogo/:id` consulta la disponibilidad de la variante
 seleccionada, la presenta por sucursal y permite añadirla a un borrador de
@@ -102,3 +105,14 @@ elimina al cerrar sesión o cuando `/auth/me` rechaza la restauración. Las ruta
 administrativas generales requieren `administrador`; inventario admite también
 `encargado` y `cajero`, pero el backend limita sucursal y acciones. Ocultar
 enlaces en la interfaz no sustituye la autorización del backend.
+
+El dashboard presenta indicadores, tablas y gráficos simples calculados por la
+API. El período se aplica a ventas, reservas y devoluciones; inventario conserva
+su fotografía actual. La interfaz identifica expresamente que la explicación
+con IA está diferida y no condiciona la visualización de los datos.
+
+La pantalla de pago carga Stripe.js con la clave publicable entregada por el
+backend y monta Stripe Elements con el `client_secret` de un `PaymentIntent`.
+Los datos de tarjeta se envían directamente a Stripe. El navegador no marca el
+pedido como pagado por sí mismo: consulta el backend hasta observar el estado
+registrado por el webhook firmado.

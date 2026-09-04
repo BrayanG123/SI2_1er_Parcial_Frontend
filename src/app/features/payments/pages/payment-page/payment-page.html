@@ -1,8 +1,8 @@
 <section class="mx-auto w-full max-w-3xl px-5 py-10 lg:px-8">
   <a routerLink="/pedidos" class="text-sm font-semibold text-rose-700">← Volver a mis pedidos</a>
-  <div class="mt-5 rounded-2xl border border-amber-300 bg-amber-50 p-5 text-amber-950">
-    <p class="text-xs font-bold tracking-[0.16em] uppercase">Ambiente de prueba</p>
-    <p class="mt-2 text-sm">Esta pantalla simula la respuesta de una pasarela. No solicita ni almacena tarjetas, cuentas o credenciales financieras.</p>
+  <div class="mt-5 rounded-2xl border border-sky-300 bg-sky-50 p-5 text-sky-950">
+    <p class="text-xs font-bold tracking-[0.16em] uppercase">Pago seguro</p>
+    <p class="mt-2 text-sm">Los datos de tarjeta se capturan directamente en Stripe Elements. La tienda no recibe ni almacena esos datos.</p>
   </div>
 
   @if (errorMessage()) {
@@ -13,19 +13,44 @@
   } @else if (order(); as current) {
     <article class="mt-6 rounded-2xl bg-white p-6 shadow-sm">
       <div class="flex flex-wrap justify-between gap-4">
-        <div><p class="text-xs font-semibold text-stone-500 uppercase">Pedido digital</p><h1 class="mt-1 text-2xl font-bold">{{ current.numero }}</h1><p class="text-sm text-stone-500">{{ current.creado_en | date:'medium' }} · {{ current.sucursal.nombre }}</p></div>
-        <div class="text-right"><p class="text-sm text-stone-500">Monto definido por backend</p><strong class="text-3xl">{{ current.total | currency:'BOB':'symbol-narrow':'1.2-2' }}</strong></div>
+        <div>
+          <p class="text-xs font-semibold text-stone-500 uppercase">Pedido digital</p>
+          <h1 class="mt-1 text-2xl font-bold">{{ current.numero }}</h1>
+          <p class="text-sm text-stone-500">{{ current.creado_en | date:'medium' }} · {{ current.sucursal.nombre }}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-sm text-stone-500">Monto definido por backend</p>
+          <strong class="text-3xl">{{ current.total | currency:'BOB':'symbol-narrow':'1.2-2' }}</strong>
+        </div>
       </div>
 
       @if (payment(); as currentPayment) {
         <div class="mt-6 rounded-xl bg-stone-100 p-5">
-          <div class="flex flex-wrap items-center justify-between gap-3"><div><p class="text-xs font-semibold text-stone-500 uppercase">{{ currentPayment.metodo }} · {{ currentPayment.ambiente }}</p><p class="mt-1 font-mono text-xs text-stone-600">{{ currentPayment.referencia_externa }}</p></div><strong>{{ currentPayment.estado }}</strong></div>
-          @if (currentPayment.estado === 'PENDIENTE') {
-            <p class="mt-5 text-sm text-stone-600">Elige la respuesta que devolverá el adaptador académico.</p>
-            <div class="mt-3 flex flex-wrap gap-3">
-              <button [disabled]="saving()" class="rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white disabled:opacity-50" (click)="confirm('APROBAR')">Simular aprobación</button>
-              <button [disabled]="saving()" class="rounded-xl border border-red-300 px-5 py-3 font-semibold text-red-700 disabled:opacity-50" (click)="confirm('RECHAZAR')">Simular rechazo</button>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold text-stone-500 uppercase">{{ currentPayment.metodo }} · {{ currentPayment.ambiente }}</p>
+              <p class="mt-1 font-mono text-xs text-stone-600">{{ currentPayment.referencia_externa }}</p>
             </div>
+            <strong>{{ currentPayment.estado }}</strong>
+          </div>
+          @if (currentPayment.estado === 'PENDIENTE') {
+            @if (currentPayment.metodo === 'STRIPE') {
+              <div class="mt-5 rounded-xl border border-stone-200 bg-white p-4">
+                <div id="stripe-payment-element" aria-label="Formulario seguro de pago"></div>
+              </div>
+              <button
+                [disabled]="saving() || !stripeReady()"
+                class="mt-4 w-full rounded-xl bg-violet-700 px-5 py-3 font-semibold text-white disabled:opacity-50"
+                (click)="confirmStripe()"
+              >{{ saving() ? 'Verificando…' : 'Pagar de forma segura con Stripe' }}</button>
+              <p class="mt-3 text-xs text-stone-500">La confirmación final llega mediante un webhook firmado; cerrar o recargar esta pantalla no duplica el cobro.</p>
+            } @else {
+              <p class="mt-5 text-sm text-stone-600">Elige la respuesta que devolverá el adaptador académico de pruebas.</p>
+              <div class="mt-3 flex flex-wrap gap-3">
+                <button [disabled]="saving()" class="rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white disabled:opacity-50" (click)="confirm('APROBAR')">Simular aprobación</button>
+                <button [disabled]="saving()" class="rounded-xl border border-red-300 px-5 py-3 font-semibold text-red-700 disabled:opacity-50" (click)="confirm('RECHAZAR')">Simular rechazo</button>
+              </div>
+            }
           } @else if (currentPayment.estado === 'APROBADO' || currentPayment.estado === 'REEMBOLSADO') {
             <p class="mt-4 text-sm text-emerald-700">Pago confirmado{{ currentPayment.pagado_en ? ' el ' + (currentPayment.pagado_en | date:'medium') : '' }}.</p>
           } @else {
@@ -33,7 +58,7 @@
           }
         </div>
       } @else {
-        <button [disabled]="saving() || current.estado !== 'CREADO'" class="mt-6 w-full rounded-xl bg-rose-700 px-5 py-3 font-semibold text-white disabled:opacity-50" (click)="initiate()">{{ saving() ? 'Iniciando…' : 'Iniciar pago de prueba' }}</button>
+        <button [disabled]="saving() || current.estado !== 'CREADO'" class="mt-6 w-full rounded-xl bg-rose-700 px-5 py-3 font-semibold text-white disabled:opacity-50" (click)="initiate()">{{ saving() ? 'Iniciando…' : 'Continuar al pago' }}</button>
       }
     </article>
   }

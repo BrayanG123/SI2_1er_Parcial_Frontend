@@ -1,0 +1,194 @@
+<section class="space-y-6">
+  <header class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+    <div>
+      <p class="text-sm font-semibold tracking-[0.18em] text-rose-700 uppercase">Decisiones con datos</p>
+      <h1 class="mt-2 text-3xl font-bold">Reportes y dashboard</h1>
+      <p class="mt-2 max-w-3xl text-stone-600">
+        Indicadores calculados por el sistema mediante consultas controladas. La explicación con
+        inteligencia artificial está diferida y no interviene en estos valores.
+      </p>
+    </div>
+    @if (report(); as data) {
+      <p class="text-xs text-stone-500">Actualizado {{ data.generado_en | date:'medium' }}</p>
+    }
+  </header>
+
+  @if (errorMessage()) {
+    <p class="rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700" role="alert">
+      {{ errorMessage() }}
+    </p>
+  }
+
+  <form
+    [formGroup]="filters"
+    class="grid gap-3 rounded-2xl bg-white p-5 shadow-sm md:grid-cols-2 xl:grid-cols-[2fr_1fr_1fr_auto]"
+    (ngSubmit)="load()"
+  >
+    <label class="grid gap-1 text-sm font-semibold text-stone-700">
+      Sucursal
+      <select formControlName="branch_id" class="rounded-xl border border-stone-300 px-3 py-2.5 font-normal">
+        @if (options().sucursales.length !== 1) {
+          <option value="">Todas las sucursales</option>
+        }
+        @for (branch of options().sucursales; track branch.id) {
+          <option [value]="branch.id">{{ branch.nombre }} · {{ branch.ciudad.nombre }}</option>
+        }
+      </select>
+    </label>
+    <label class="grid gap-1 text-sm font-semibold text-stone-700">
+      Desde
+      <input type="date" formControlName="date_from" class="rounded-xl border border-stone-300 px-3 py-2.5 font-normal" />
+    </label>
+    <label class="grid gap-1 text-sm font-semibold text-stone-700">
+      Hasta
+      <input type="date" formControlName="date_to" class="rounded-xl border border-stone-300 px-3 py-2.5 font-normal" />
+    </label>
+    <div class="flex items-end gap-2">
+      <button type="submit" class="rounded-xl bg-stone-900 px-5 py-2.5 font-semibold text-white" [disabled]="loading()">
+        Actualizar
+      </button>
+      <button type="button" class="rounded-xl border border-stone-300 px-4 py-2.5 font-semibold" (click)="clear()">
+        Limpiar
+      </button>
+    </div>
+  </form>
+
+  @if (loading()) {
+    <div class="rounded-2xl bg-white p-12 text-center text-stone-500 shadow-sm">Calculando indicadores…</div>
+  } @else if (report(); as data) {
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <article class="rounded-2xl bg-stone-950 p-5 text-white shadow-sm">
+        <p class="text-xs font-semibold tracking-wide text-stone-400 uppercase">Venta neta</p>
+        <p class="mt-3 text-3xl font-bold">{{ data.ventas.resumen.venta_neta | currency:'BOB':'symbol-narrow':'1.2-2' }}</p>
+        <p class="mt-2 text-sm text-stone-300">{{ data.ventas.resumen.pedidos }} pedidos · {{ data.ventas.resumen.unidades }} unidades</p>
+      </article>
+      <article class="rounded-2xl bg-emerald-700 p-5 text-white shadow-sm">
+        <p class="text-xs font-semibold tracking-wide text-emerald-100 uppercase">Stock disponible</p>
+        <p class="mt-3 text-3xl font-bold">{{ data.inventario.resumen.stock_disponible | number }}</p>
+        <p class="mt-2 text-sm text-emerald-100">{{ data.inventario.resumen.agotados }} agotados · {{ data.inventario.resumen.stock_bajo }} con stock bajo</p>
+      </article>
+      <article class="rounded-2xl bg-sky-700 p-5 text-white shadow-sm">
+        <p class="text-xs font-semibold tracking-wide text-sky-100 uppercase">Reservas</p>
+        <p class="mt-3 text-3xl font-bold">{{ data.reservas.resumen.reservas | number }}</p>
+        <p class="mt-2 text-sm text-sky-100">{{ data.reservas.resumen.tasa_conversion | number:'1.2-2' }}% convertidas</p>
+      </article>
+      <article class="rounded-2xl bg-rose-700 p-5 text-white shadow-sm">
+        <p class="text-xs font-semibold tracking-wide text-rose-100 uppercase">Devoluciones</p>
+        <p class="mt-3 text-3xl font-bold">{{ data.devoluciones.resumen.devoluciones | number }}</p>
+        <p class="mt-2 text-sm text-rose-100">{{ data.devoluciones.resumen.monto_reembolsado | currency:'BOB':'symbol-narrow':'1.2-2' }} reembolsados</p>
+      </article>
+    </div>
+
+    <nav class="flex flex-wrap gap-2 rounded-2xl bg-white p-2 shadow-sm" aria-label="Tipos de reporte">
+      @for (item of [
+        { id: 'ventas', label: 'Ventas' },
+        { id: 'inventario', label: 'Inventario' },
+        { id: 'reservas', label: 'Reservas' },
+        { id: 'devoluciones', label: 'Devoluciones' }
+      ]; track item.id) {
+        <button
+          type="button"
+          class="rounded-xl px-5 py-2.5 text-sm font-semibold capitalize"
+          [class.bg-stone-900]="section() === item.id"
+          [class.text-white]="section() === item.id"
+          [class.text-stone-600]="section() !== item.id"
+          (click)="show($any(item.id))"
+        >{{ item.label }}</button>
+      }
+    </nav>
+
+    @if (section() === 'ventas') {
+      <div class="grid gap-6 xl:grid-cols-2">
+        <article class="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 class="text-xl font-bold">Ventas por día</h2>
+          <p class="mt-1 text-sm text-stone-500">Solo pedidos pagados, completados o reembolsados.</p>
+          <div class="mt-6 space-y-4">
+            @for (item of data.ventas.por_dia; track item.fecha) {
+              <div>
+                <div class="mb-1 flex justify-between gap-4 text-sm">
+                  <span>{{ item.fecha | date:'mediumDate' }} · {{ item.pedidos }} pedidos</span>
+                  <strong>{{ item.monto | currency:'BOB':'symbol-narrow':'1.2-2' }}</strong>
+                </div>
+                <div class="h-3 overflow-hidden rounded-full bg-stone-100">
+                  <div class="h-full rounded-full bg-rose-600" [style.width.%]="dailyWidth(item.monto)"></div>
+                </div>
+              </div>
+            } @empty {
+              <p class="rounded-xl bg-stone-50 p-5 text-sm text-stone-500">No hay ventas para el período seleccionado.</p>
+            }
+          </div>
+        </article>
+
+        <article class="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 class="text-xl font-bold">Canales</h2>
+          <div class="mt-6 grid gap-3 sm:grid-cols-3">
+            @for (item of data.ventas.por_canal; track item.canal) {
+              <div class="rounded-xl border border-stone-200 p-4">
+                <p class="text-xs font-bold tracking-wide text-stone-500 uppercase">{{ item.canal }}</p>
+                <p class="mt-2 text-2xl font-bold">{{ item.pedidos }}</p>
+                <p class="text-sm text-stone-600">{{ item.monto | currency:'BOB':'symbol-narrow':'1.2-2' }}</p>
+              </div>
+            }
+          </div>
+          <dl class="mt-6 grid grid-cols-2 gap-4 border-t border-stone-100 pt-5 text-sm">
+            <div><dt class="text-stone-500">Venta bruta</dt><dd class="font-bold">{{ data.ventas.resumen.venta_bruta | currency:'BOB':'symbol-narrow':'1.2-2' }}</dd></div>
+            <div><dt class="text-stone-500">Reembolsos</dt><dd class="font-bold text-rose-700">− {{ data.ventas.resumen.reembolsos | currency:'BOB':'symbol-narrow':'1.2-2' }}</dd></div>
+            <div><dt class="text-stone-500">Venta neta</dt><dd class="font-bold text-emerald-700">{{ data.ventas.resumen.venta_neta | currency:'BOB':'symbol-narrow':'1.2-2' }}</dd></div>
+            <div><dt class="text-stone-500">Ticket promedio</dt><dd class="font-bold">{{ data.ventas.resumen.ticket_promedio | currency:'BOB':'symbol-narrow':'1.2-2' }}</dd></div>
+          </dl>
+        </article>
+
+        <article class="rounded-2xl bg-white p-6 shadow-sm xl:col-span-2">
+          <h2 class="text-xl font-bold">Productos destacados</h2>
+          <div class="mt-4 overflow-x-auto">
+            <table class="w-full min-w-[600px] text-left text-sm">
+              <thead class="text-xs text-stone-500 uppercase"><tr><th class="py-3">Producto</th><th class="py-3 text-right">Unidades</th><th class="py-3 text-right">Venta bruta</th></tr></thead>
+              <tbody class="divide-y divide-stone-100">
+                @for (item of data.ventas.productos_destacados; track item.producto_id) {
+                  <tr><td class="py-3 font-semibold">{{ item.producto_nombre }}</td><td class="py-3 text-right">{{ item.unidades }}</td><td class="py-3 text-right font-bold">{{ item.monto | currency:'BOB':'symbol-narrow':'1.2-2' }}</td></tr>
+                } @empty {
+                  <tr><td colspan="3" class="py-8 text-center text-stone-500">Sin productos vendidos en este período.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+    }
+
+    @if (section() === 'inventario') {
+      <article class="rounded-2xl bg-white p-6 shadow-sm">
+        <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div><h2 class="text-xl font-bold">Estado actual del inventario</h2><p class="mt-1 text-sm text-stone-500">El período no modifica esta fotografía actual. Stock bajo: 1 a {{ data.inventario.resumen.umbral_stock_bajo }} unidades.</p></div>
+          <p class="text-sm text-stone-600">Físico {{ data.inventario.resumen.stock_fisico }} · Reservado {{ data.inventario.resumen.stock_reservado }}</p>
+        </div>
+        <div class="mt-5 overflow-x-auto">
+          <table class="w-full min-w-[760px] text-left text-sm">
+            <thead class="bg-stone-50 text-xs text-stone-500 uppercase"><tr><th class="px-4 py-3">Sucursal</th><th class="px-4 py-3">Producto</th><th class="px-4 py-3">SKU</th><th class="px-4 py-3 text-right">Físico</th><th class="px-4 py-3 text-right">Reservado</th><th class="px-4 py-3 text-right">Disponible</th></tr></thead>
+            <tbody class="divide-y divide-stone-100">
+              @for (item of data.inventario.existencias_criticas; track item.inventario_id) {
+                <tr><td class="px-4 py-3">{{ item.sucursal_nombre }}</td><td class="px-4 py-3 font-semibold">{{ item.producto_nombre }}</td><td class="px-4 py-3 font-mono text-xs">{{ item.sku }}</td><td class="px-4 py-3 text-right">{{ item.stock_fisico }}</td><td class="px-4 py-3 text-right">{{ item.stock_reservado }}</td><td class="px-4 py-3 text-right font-bold" [class.text-red-700]="item.stock_disponible === 0" [class.text-amber-700]="item.stock_disponible > 0">{{ item.stock_disponible }}</td></tr>
+              } @empty {
+                <tr><td colspan="6" class="px-4 py-10 text-center text-stone-500">No hay existencias agotadas ni con stock bajo.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </article>
+    }
+
+    @if (section() === 'reservas') {
+      <div class="grid gap-6 lg:grid-cols-[1fr_2fr]">
+        <article class="rounded-2xl bg-white p-6 shadow-sm"><h2 class="text-xl font-bold">Resumen de reservas</h2><dl class="mt-5 space-y-4 text-sm"><div class="flex justify-between"><dt class="text-stone-500">Total</dt><dd class="font-bold">{{ data.reservas.resumen.reservas }}</dd></div><div class="flex justify-between"><dt class="text-stone-500">Unidades solicitadas</dt><dd class="font-bold">{{ data.reservas.resumen.unidades }}</dd></div><div class="flex justify-between"><dt class="text-stone-500">Convertidas en pedido</dt><dd class="font-bold">{{ data.reservas.resumen.convertidas_en_pedido }}</dd></div><div class="flex justify-between"><dt class="text-stone-500">Tasa de conversión</dt><dd class="font-bold">{{ data.reservas.resumen.tasa_conversion | number:'1.2-2' }}%</dd></div></dl></article>
+        <article class="rounded-2xl bg-white p-6 shadow-sm"><h2 class="text-xl font-bold">Reservas por estado</h2><div class="mt-6 space-y-3">@for (item of data.reservas.por_estado; track item.estado) { <div><div class="mb-1 flex justify-between text-sm"><span class="capitalize">{{ stateLabel(item.estado) }}</span><strong>{{ item.cantidad }}</strong></div><div class="h-3 overflow-hidden rounded-full bg-stone-100"><div class="h-full rounded-full bg-sky-600" [style.width.%]="reservationWidth(item.cantidad)"></div></div></div> }</div></article>
+      </div>
+    }
+
+    @if (section() === 'devoluciones') {
+      <div class="grid gap-6 lg:grid-cols-[1fr_2fr]">
+        <article class="rounded-2xl bg-white p-6 shadow-sm"><h2 class="text-xl font-bold">Resumen de devoluciones</h2><dl class="mt-5 space-y-4 text-sm"><div class="flex justify-between"><dt class="text-stone-500">Solicitudes</dt><dd class="font-bold">{{ data.devoluciones.resumen.devoluciones }}</dd></div><div class="flex justify-between"><dt class="text-stone-500">Unidades</dt><dd class="font-bold">{{ data.devoluciones.resumen.unidades }}</dd></div><div class="flex justify-between"><dt class="text-stone-500">Monto solicitado</dt><dd class="font-bold">{{ data.devoluciones.resumen.monto_solicitado | currency:'BOB':'symbol-narrow':'1.2-2' }}</dd></div><div class="flex justify-between"><dt class="text-stone-500">Reembolsado</dt><dd class="font-bold text-rose-700">{{ data.devoluciones.resumen.monto_reembolsado | currency:'BOB':'symbol-narrow':'1.2-2' }}</dd></div></dl></article>
+        <article class="rounded-2xl bg-white p-6 shadow-sm"><h2 class="text-xl font-bold">Devoluciones por estado</h2><div class="mt-6 space-y-3">@for (item of data.devoluciones.por_estado; track item.estado) { <div><div class="mb-1 flex justify-between text-sm"><span class="capitalize">{{ stateLabel(item.estado) }}</span><strong>{{ item.cantidad }}</strong></div><div class="h-3 overflow-hidden rounded-full bg-stone-100"><div class="h-full rounded-full bg-rose-600" [style.width.%]="returnWidth(item.cantidad)"></div></div></div> }</div></article>
+      </div>
+    }
+  }
+</section>

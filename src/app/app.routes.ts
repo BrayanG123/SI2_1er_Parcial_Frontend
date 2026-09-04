@@ -242,6 +242,25 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'reportes',
+    title: 'Reportes y dashboard | Tienda de ropa',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['administrador', 'encargado'] },
+    loadComponent: () =>
+      import('./layouts/admin-layout/admin-layout').then(
+        (component) => component.AdminLayout,
+      ),
+    children: [
+      {
+        path: '',
+        loadChildren: () =>
+          import('./features/reports/reports.routes').then(
+            (routes) => routes.REPORT_ROUTES,
+          ),
+      },
+    ],
+  },
+  {
     path: '**',
     title: 'Página no encontrada | Tienda de ropa',
     loadComponent: () =>

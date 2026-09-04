@@ -1,5 +1,5 @@
 export type PaymentStatus = 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'REEMBOLSADO';
-export type PaymentMethod = 'PASARELA_PRUEBA' | 'CAJA';
+export type PaymentMethod = 'PASARELA_PRUEBA' | 'STRIPE' | 'CAJA';
 
 export interface Refund {
   id: string;
@@ -20,8 +20,11 @@ export interface Payment {
   monto: number;
   monto_reembolsado: number;
   referencia_externa: string | null;
-  ambiente: 'PRUEBA' | 'LOCAL';
+  ambiente: 'PRUEBA' | 'STRIPE' | 'LOCAL';
   creado_en: string;
   pagado_en: string | null;
   reembolsos: Refund[];
+  client_secret?: string | null;
+  publishable_key?: string | null;
+  moneda?: string | null;
 }
