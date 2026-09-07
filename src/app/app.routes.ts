@@ -13,11 +13,8 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        title: 'Inicio | Tienda de ropa',
-        loadComponent: () =>
-          import('./features/home/pages/home-page/home-page').then(
-            (component) => component.HomePage,
-          ),
+        pathMatch: 'full',
+        redirectTo: 'catalogo',
       },
       {
         path: 'auth/login',

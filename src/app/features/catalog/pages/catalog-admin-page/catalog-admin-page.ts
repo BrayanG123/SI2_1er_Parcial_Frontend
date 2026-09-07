@@ -1,9 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { forkJoin, Observable } from 'rxjs';
 
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ApiError } from '../../../../shared/models/api-error.model';
+import { AdminFormDrawer } from '../../../../shared/ui/admin-form-drawer/admin-form-drawer';
 import { CategoriesAdminService } from '../../../categories/data-access/categories-admin.service';
 import { Category } from '../../../categories/models/category.models';
 import { SuppliersAdminService } from '../../../suppliers/data-access/suppliers-admin.service';
@@ -11,7 +14,7 @@ import { Supplier } from '../../../suppliers/models/supplier.models';
 import { CatalogService } from '../../data-access/catalog.service';
 import { Collection, Color, Product, Season, Size } from '../../models/catalog.models';
 
-@Component({ selector: 'app-catalog-admin-page', imports: [ReactiveFormsModule], templateUrl: './catalog-admin-page.html' })
+@Component({ selector: 'app-catalog-admin-page', imports: [ReactiveFormsModule, AdminFormDrawer, FontAwesomeModule], templateUrl: './catalog-admin-page.html' })
 export class CatalogAdminPage {
   private readonly fb = inject(FormBuilder);
   private readonly service = inject(CatalogService);
@@ -27,6 +30,8 @@ export class CatalogAdminPage {
   protected readonly editingSeason = signal<string | null>(null); protected readonly editingCollection = signal<string | null>(null);
   protected readonly editingProduct = signal<string | null>(null);
   protected readonly editingVariant = signal<string | null>(null);
+  protected readonly formKind = signal<'size' | 'color' | 'season' | 'collection' | 'product' | 'variant' | null>(null);
+  protected readonly faPlus = faPlus;
 
   protected readonly sizeForm = this.fb.nonNullable.group({ nombre: ['', Validators.required], orden: [0] });
   protected readonly colorForm = this.fb.nonNullable.group({ nombre: ['', Validators.required], codigo_hex: [''] });
@@ -41,14 +46,29 @@ export class CatalogAdminPage {
 
   constructor() { this.load(); }
 
-  protected saveSize(): void { const value = this.sizeForm.getRawValue(); this.saveMaster(this.editingSize() ? this.service.updateSize(this.editingSize()!, value) : this.service.createSize(value), () => { this.editingSize.set(null); this.sizeForm.reset({ nombre: '', orden: 0 }); }); }
-  protected editSize(item: Size): void { this.editingSize.set(item.id); this.sizeForm.setValue({ nombre: item.nombre, orden: item.orden ?? 0 }); }
-  protected saveColor(): void { const value = this.colorForm.getRawValue(); const data = { nombre: value.nombre, codigo_hex: value.codigo_hex || null }; this.saveMaster(this.editingColor() ? this.service.updateColor(this.editingColor()!, data) : this.service.createColor(data), () => { this.editingColor.set(null); this.colorForm.reset({ nombre: '', codigo_hex: '' }); }); }
-  protected editColor(item: Color): void { this.editingColor.set(item.id); this.colorForm.setValue({ nombre: item.nombre, codigo_hex: item.codigo_hex ?? '' }); }
-  protected saveSeason(): void { const value = this.seasonForm.getRawValue(); const data = { nombre: value.nombre, fecha_inicio: value.fecha_inicio || null, fecha_fin: value.fecha_fin || null, activa: true }; this.saveMaster(this.editingSeason() ? this.service.updateSeason(this.editingSeason()!, { nombre: data.nombre, fecha_inicio: data.fecha_inicio, fecha_fin: data.fecha_fin }) : this.service.createSeason(data), () => { this.editingSeason.set(null); this.seasonForm.reset({ nombre: '', fecha_inicio: '', fecha_fin: '' }); }); }
-  protected editSeason(item: Season): void { this.editingSeason.set(item.id); this.seasonForm.setValue({ nombre: item.nombre, fecha_inicio: item.fecha_inicio ?? '', fecha_fin: item.fecha_fin ?? '' }); }
-  protected saveCollection(): void { const value = this.collectionForm.getRawValue(); const data = { temporada_id: value.temporada_id, nombre: value.nombre, descripcion: value.descripcion || null }; this.saveMaster(this.editingCollection() ? this.service.updateCollection(this.editingCollection()!, data) : this.service.createCollection(data), () => { this.editingCollection.set(null); this.collectionForm.reset({ temporada_id: '', nombre: '', descripcion: '' }); }); }
-  protected editCollection(item: Collection): void { this.editingCollection.set(item.id); this.collectionForm.setValue({ temporada_id: item.temporada_id, nombre: item.nombre, descripcion: item.descripcion ?? '' }); }
+  protected openForm(kind: 'size' | 'color' | 'season' | 'collection' | 'product' | 'variant'): void {
+    this.closeForm();
+    this.formKind.set(kind);
+  }
+
+  protected closeForm(): void {
+    this.formKind.set(null);
+    this.editingSize.set(null); this.sizeForm.reset({ nombre: '', orden: 0 });
+    this.editingColor.set(null); this.colorForm.reset({ nombre: '', codigo_hex: '' });
+    this.editingSeason.set(null); this.seasonForm.reset({ nombre: '', fecha_inicio: '', fecha_fin: '' });
+    this.editingCollection.set(null); this.collectionForm.reset({ temporada_id: '', nombre: '', descripcion: '' });
+    this.editingProduct.set(null); this.productForm.reset({ categoria_id: '', proveedor_id: '', temporada_id: '', coleccion_id: '', nombre: '', descripcion: '', marca: '', precio_base: 0, talla_id: '', color_id: '', sku: '', precio_variante: 0, imagenes: '' });
+    this.editingVariant.set(null); this.variantForm.reset({ producto_id: '', talla_id: '', color_id: '', sku: '', precio: 0 });
+  }
+
+  protected saveSize(): void { const value = this.sizeForm.getRawValue(); this.saveMaster(this.editingSize() ? this.service.updateSize(this.editingSize()!, value) : this.service.createSize(value), () => this.closeForm()); }
+  protected editSize(item: Size): void { this.closeForm(); this.editingSize.set(item.id); this.sizeForm.setValue({ nombre: item.nombre, orden: item.orden ?? 0 }); this.formKind.set('size'); }
+  protected saveColor(): void { const value = this.colorForm.getRawValue(); const data = { nombre: value.nombre, codigo_hex: value.codigo_hex || null }; this.saveMaster(this.editingColor() ? this.service.updateColor(this.editingColor()!, data) : this.service.createColor(data), () => this.closeForm()); }
+  protected editColor(item: Color): void { this.closeForm(); this.editingColor.set(item.id); this.colorForm.setValue({ nombre: item.nombre, codigo_hex: item.codigo_hex ?? '' }); this.formKind.set('color'); }
+  protected saveSeason(): void { const value = this.seasonForm.getRawValue(); const data = { nombre: value.nombre, fecha_inicio: value.fecha_inicio || null, fecha_fin: value.fecha_fin || null, activa: true }; this.saveMaster(this.editingSeason() ? this.service.updateSeason(this.editingSeason()!, { nombre: data.nombre, fecha_inicio: data.fecha_inicio, fecha_fin: data.fecha_fin }) : this.service.createSeason(data), () => this.closeForm()); }
+  protected editSeason(item: Season): void { this.closeForm(); this.editingSeason.set(item.id); this.seasonForm.setValue({ nombre: item.nombre, fecha_inicio: item.fecha_inicio ?? '', fecha_fin: item.fecha_fin ?? '' }); this.formKind.set('season'); }
+  protected saveCollection(): void { const value = this.collectionForm.getRawValue(); const data = { temporada_id: value.temporada_id, nombre: value.nombre, descripcion: value.descripcion || null }; this.saveMaster(this.editingCollection() ? this.service.updateCollection(this.editingCollection()!, data) : this.service.createCollection(data), () => this.closeForm()); }
+  protected editCollection(item: Collection): void { this.closeForm(); this.editingCollection.set(item.id); this.collectionForm.setValue({ temporada_id: item.temporada_id, nombre: item.nombre, descripcion: item.descripcion ?? '' }); this.formKind.set('collection'); }
 
   protected async deleteSize(item: Size): Promise<void> { await this.confirmDelete(`la talla ${item.nombre}`, this.service.deleteSize(item.id)); }
   protected async deleteColor(item: Color): Promise<void> { await this.confirmDelete(`el color ${item.nombre}`, this.service.deleteColor(item.id)); }
@@ -70,10 +90,12 @@ export class CatalogAdminPage {
     request.subscribe({ next: () => { this.cancelProductEdit(); this.load(); }, error: (error: ApiError) => this.errorMessage.set(error.message) });
   }
   protected editProduct(item: Product): void {
+    this.closeForm();
     this.editingProduct.set(item.id);
     this.productForm.setValue({ categoria_id: item.categoria_id, proveedor_id: item.proveedor_id, temporada_id: item.temporada_id ?? '', coleccion_id: item.coleccion_id ?? '', nombre: item.nombre, descripcion: item.descripcion ?? '', marca: item.marca ?? '', precio_base: Number(item.precio_base), talla_id: '', color_id: '', sku: '', precio_variante: 0, imagenes: item.imagenes.map((image) => image.url).join('\n') });
+    this.formKind.set('product');
   }
-  protected cancelProductEdit(): void { this.editingProduct.set(null); this.productForm.reset({ categoria_id: '', proveedor_id: '', temporada_id: '', coleccion_id: '', nombre: '', descripcion: '', marca: '', precio_base: 0, talla_id: '', color_id: '', sku: '', precio_variante: 0, imagenes: '' }); }
+  protected cancelProductEdit(): void { this.closeForm(); }
   protected toggleProduct(item: Product): void { this.service.updateProduct(item.id, { activo: !item.activo }).subscribe({ next: () => this.load(), error: (error: ApiError) => this.errorMessage.set(error.message) }); }
   protected async deleteProduct(item: Product): Promise<void> { if (await this.notifications.confirm(`¿Eliminar el producto ${item.nombre}?`)) this.service.deleteProduct(item.id).subscribe({ next: () => this.load(), error: (error: ApiError) => this.errorMessage.set(error.message) }); }
 
@@ -86,8 +108,9 @@ export class CatalogAdminPage {
       : this.service.createVariant(value.producto_id, data);
     request.subscribe({ next: () => { this.cancelVariantEdit(); this.load(); }, error: (error: ApiError) => this.errorMessage.set(error.message) });
   }
-  protected editVariant(product: Product, item: Product['variantes'][number]): void { this.editingVariant.set(item.id); this.variantForm.setValue({ producto_id: product.id, talla_id: item.talla_id, color_id: item.color_id, sku: item.sku, precio: Number(item.precio ?? 0) }); }
-  protected cancelVariantEdit(): void { this.editingVariant.set(null); this.variantForm.reset({ producto_id: '', talla_id: '', color_id: '', sku: '', precio: 0 }); }
+  protected addVariantFor(product: Product): void { this.openForm('variant'); this.variantForm.controls.producto_id.setValue(product.id); }
+  protected editVariant(product: Product, item: Product['variantes'][number]): void { this.closeForm(); this.editingVariant.set(item.id); this.variantForm.setValue({ producto_id: product.id, talla_id: item.talla_id, color_id: item.color_id, sku: item.sku, precio: Number(item.precio ?? 0) }); this.formKind.set('variant'); }
+  protected cancelVariantEdit(): void { this.closeForm(); }
   protected toggleVariant(item: Product['variantes'][number]): void { this.service.updateVariant(item.id, { activa: !item.activa }).subscribe({ next: () => this.load(), error: (error: ApiError) => this.errorMessage.set(error.message) }); }
   protected async deleteVariant(item: Product['variantes'][number]): Promise<void> { if (await this.notifications.confirm(`¿Eliminar la variante ${item.sku}?`)) this.service.deleteVariant(item.id).subscribe({ next: () => this.load(), error: (error: ApiError) => this.errorMessage.set(error.message) }); }
   protected collectionsForSelectedSeason(): Collection[] { const seasonId = this.productForm.controls.temporada_id.value; return this.collections().filter((item) => item.temporada_id === seasonId); }

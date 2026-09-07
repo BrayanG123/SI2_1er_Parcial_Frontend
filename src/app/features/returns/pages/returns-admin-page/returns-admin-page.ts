@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ApiError } from '../../../../shared/models/api-error.model';
+import { AdminFormDrawer } from '../../../../shared/ui/admin-form-drawer/admin-form-drawer';
 import { OrdersService } from '../../../orders/data-access/orders.service';
 import { OrderOptions } from '../../../orders/models/order.models';
 import { ReturnsService } from '../../data-access/returns.service';
@@ -11,7 +12,7 @@ import { ReturnRequest, ReturnStatus } from '../../models/return.models';
 
 @Component({
   selector: 'app-returns-admin-page',
-  imports: [CurrencyPipe, DatePipe, ReactiveFormsModule],
+  imports: [CurrencyPipe, DatePipe, ReactiveFormsModule, AdminFormDrawer],
   templateUrl: './returns-admin-page.html',
 })
 export class ReturnsAdminPage {
@@ -24,6 +25,7 @@ export class ReturnsAdminPage {
   protected readonly loading = signal(true);
   protected readonly actionId = signal<string | null>(null);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly selectedForCompletion = signal<ReturnRequest | null>(null);
   protected readonly filters = this.fb.nonNullable.group({ branch_id: [''], state: [''] });
   protected readonly completion = this.fb.nonNullable.group({
     reingresar_stock: [true], generar_reembolso: [true],
@@ -48,6 +50,19 @@ export class ReturnsAdminPage {
 
   protected clear(): void { this.filters.reset({ branch_id: '', state: '' }); this.load(); }
 
+  protected openCompletion(item: ReturnRequest): void {
+    this.completion.reset({ reingresar_stock: true, generar_reembolso: true });
+    this.selectedForCompletion.set(item);
+  }
+
+  protected closeCompletion(): void { this.selectedForCompletion.set(null); }
+
+  protected async complete(): Promise<void> {
+    const item = this.selectedForCompletion();
+    if (!item) return;
+    await this.transition(item, 'COMPLETADA');
+  }
+
   protected async transition(item: ReturnRequest, state: ReturnStatus): Promise<void> {
     const message = state === 'COMPLETADA'
       ? 'Se finalizará la devolución con las opciones de stock y reembolso seleccionadas.'
@@ -59,6 +74,7 @@ export class ReturnsAdminPage {
       next: (updated) => {
         this.items.update((items) => items.map((candidate) => candidate.id === updated.id ? updated : candidate));
         this.actionId.set(null);
+        this.closeCompletion();
         void this.notifications.success('Estado de devolución actualizado.');
       },
       error: (error: ApiError) => { this.errorMessage.set(error.message); this.actionId.set(null); },

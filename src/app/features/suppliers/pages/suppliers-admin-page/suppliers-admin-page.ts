@@ -1,12 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ApiError } from '../../../../shared/models/api-error.model';
+import { AdminFormDrawer } from '../../../../shared/ui/admin-form-drawer/admin-form-drawer';
 import { SuppliersAdminService } from '../../data-access/suppliers-admin.service';
 import { Supplier } from '../../models/supplier.models';
 
-@Component({ selector: 'app-suppliers-admin-page', imports: [ReactiveFormsModule], templateUrl: './suppliers-admin-page.html' })
+@Component({ selector: 'app-suppliers-admin-page', imports: [ReactiveFormsModule, AdminFormDrawer, FontAwesomeModule], templateUrl: './suppliers-admin-page.html' })
 export class SuppliersAdminPage {
   private readonly fb = inject(FormBuilder);
   private readonly service = inject(SuppliersAdminService);
@@ -18,6 +21,8 @@ export class SuppliersAdminPage {
   protected readonly page = signal(1);
   protected readonly total = signal(0);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly formOpen = signal(false);
+  protected readonly faPlus = faPlus;
   protected readonly pageSize = 10;
   protected readonly search = this.fb.nonNullable.control('');
   protected readonly form = this.fb.nonNullable.group({
@@ -26,6 +31,8 @@ export class SuppliersAdminPage {
   });
 
   constructor() { this.load(); }
+
+  protected openCreate(): void { this.cancelEdit(); this.formOpen.set(true); }
 
   protected save(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
@@ -44,8 +51,9 @@ export class SuppliersAdminPage {
   protected edit(item: Supplier): void {
     this.editingId.set(item.id);
     this.form.setValue({ nombre: item.nombre, nit: item.nit ?? '', telefono: item.telefono ?? '', email: item.email ?? '', direccion: item.direccion ?? '' });
+    this.formOpen.set(true);
   }
-  protected cancelEdit(): void { this.editingId.set(null); this.form.reset({ nombre: '', nit: '', telefono: '', email: '', direccion: '' }); }
+  protected cancelEdit(): void { this.editingId.set(null); this.formOpen.set(false); this.form.reset({ nombre: '', nit: '', telefono: '', email: '', direccion: '' }); }
   protected async toggle(item: Supplier): Promise<void> {
     if (!(await this.notifications.confirm(`¿Deseas ${item.activo ? 'desactivar' : 'activar'} ${item.nombre}?`))) return;
     this.service.update(item.id, { activo: !item.activo }).subscribe({ next: () => this.load(), error: (error: ApiError) => this.errorMessage.set(error.message) });

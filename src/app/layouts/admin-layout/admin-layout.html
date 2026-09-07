@@ -1,93 +1,56 @@
-<div class="min-h-dvh bg-stone-100 text-stone-900 lg:grid lg:grid-cols-[250px_1fr]">
-  <aside class="bg-stone-950 px-5 py-6 text-white lg:min-h-dvh">
-    <a routerLink="/" class="text-lg font-bold">Ropa · Administración</a>
-    <nav class="mt-8 flex gap-2 lg:flex-col" aria-label="Administración">
+<div
+  class="min-h-dvh bg-stone-100 text-stone-900 lg:grid"
+  [class]="sidebarCollapsed() ? 'lg:grid-cols-[88px_1fr]' : 'lg:grid-cols-[260px_1fr]'"
+>
+  @if (mobileSidebarOpen()) {
+    <button type="button" class="fixed inset-0 z-30 bg-stone-950/55 lg:hidden" aria-label="Cerrar menú" (click)="closeMobileSidebar()"></button>
+  }
+
+  <aside class="fixed inset-y-0 left-0 z-40 flex w-[280px] flex-col bg-stone-950 px-4 py-5 text-white shadow-2xl lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-auto lg:shadow-none" [class.hidden]="!mobileSidebarOpen()">
+    <div class="flex items-center justify-between gap-3 px-2">
+      <a routerLink="/catalogo" class="flex min-w-0 items-center gap-3" (click)="closeMobileSidebar()">
+        <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-rose-700"><fa-icon [icon]="faShirt" /></span>
+        @if (!sidebarCollapsed()) { <span class="truncate text-base font-bold">Ropa · Administración</span> }
+      </a>
+      <button type="button" class="grid size-9 place-items-center rounded-lg text-stone-300 hover:bg-stone-800 lg:hidden" aria-label="Cerrar menú" (click)="closeMobileSidebar()"><fa-icon [icon]="faXmark" /></button>
+    </div>
+
+    <nav class="mt-7 flex flex-1 flex-col gap-1 overflow-y-auto" aria-label="Administración">
       @if (isAdmin()) {
-      <a
-        routerLink="/admin/usuarios"
-        routerLinkActive="bg-rose-700 text-white"
-        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
-      >Usuarios</a>
-      <a
-        routerLink="/admin/roles"
-        routerLinkActive="bg-rose-700 text-white"
-        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
-      >Roles</a>
-      <a
-        routerLink="/admin/sucursales"
-        routerLinkActive="bg-rose-700 text-white"
-        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
-      >Ciudades y sucursales</a>
-      <a
-        routerLink="/admin/categorias"
-        routerLinkActive="bg-rose-700 text-white"
-        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
-      >Categorías</a>
-      <a
-        routerLink="/admin/proveedores"
-        routerLinkActive="bg-rose-700 text-white"
-        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
-      >Proveedores</a>
-      <a
-        routerLink="/admin/catalogo"
-        routerLinkActive="bg-rose-700 text-white"
-        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
-      >Catálogo</a>
+        <a routerLink="/admin/usuarios" routerLinkActive="bg-rose-700 text-white" title="Usuarios" class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800" (click)="closeMobileSidebar()"><fa-icon [icon]="faUsers" [fixedWidth]="true" />@if (!sidebarCollapsed()) { <span>Usuarios</span> }</a>
+        <a routerLink="/admin/roles" routerLinkActive="bg-rose-700 text-white" title="Roles" class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800" (click)="closeMobileSidebar()"><fa-icon [icon]="faUserShield" [fixedWidth]="true" />@if (!sidebarCollapsed()) { <span>Roles</span> }</a>
+        <a routerLink="/admin/sucursales" routerLinkActive="bg-rose-700 text-white" title="Ciudades y sucursales" class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800" (click)="closeMobileSidebar()"><fa-icon [icon]="faStore" [fixedWidth]="true" />@if (!sidebarCollapsed()) { <span>Ciudades y sucursales</span> }</a>
+        <a routerLink="/admin/categorias" routerLinkActive="bg-rose-700 text-white" title="Categorías" class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800" (click)="closeMobileSidebar()"><fa-icon [icon]="faTags" [fixedWidth]="true" />@if (!sidebarCollapsed()) { <span>Categorías</span> }</a>
+        <a routerLink="/admin/proveedores" routerLinkActive="bg-rose-700 text-white" title="Proveedores" class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800" (click)="closeMobileSidebar()"><fa-icon [icon]="faTruck" [fixedWidth]="true" />@if (!sidebarCollapsed()) { <span>Proveedores</span> }</a>
+        <a routerLink="/admin/catalogo" routerLinkActive="bg-rose-700 text-white" title="Catálogo" class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800" (click)="closeMobileSidebar()"><fa-icon [icon]="faBoxesStacked" [fixedWidth]="true" />@if (!sidebarCollapsed()) { <span>Catálogo</span> }</a>
       }
-      <a
-        routerLink="/inventario"
-        routerLinkActive="bg-rose-700 text-white"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
-      >Inventario</a>
+      <a routerLink="/inventario" routerLinkActive="bg-rose-700 text-white" [routerLinkActiveOptions]="{ exact: true }" title="Inventario" class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800" (click)="closeMobileSidebar()"><fa-icon [icon]="faWarehouse" [fixedWidth]="true" />@if (!sidebarCollapsed()) { <span>Inventario</span> }</a>
       @if (auth.hasAnyRole(['administrador', 'encargado'])) {
-      <a
-        routerLink="/reservas/sucursal"
-        routerLinkActive="bg-rose-700 text-white"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
-      >Reservas</a>
+        <a routerLink="/reservas/sucursal" routerLinkActive="bg-rose-700 text-white" [routerLinkActiveOptions]="{ exact: true }" title="Reservas" class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800" (click)="closeMobileSidebar()"><fa-icon [icon]="faCalendarCheck" [fixedWidth]="true" />@if (!sidebarCollapsed()) { <span>Reservas</span> }</a>
       }
-      <a
-        routerLink="/pedidos/gestion"
-        routerLinkActive="bg-rose-700 text-white"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
-      >Pedidos y ventas</a>
+      <a routerLink="/pedidos/gestion" routerLinkActive="bg-rose-700 text-white" [routerLinkActiveOptions]="{ exact: true }" title="Pedidos y ventas" class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800" (click)="closeMobileSidebar()"><fa-icon [icon]="faReceipt" [fixedWidth]="true" />@if (!sidebarCollapsed()) { <span>Pedidos y ventas</span> }</a>
       @if (auth.hasAnyRole(['administrador', 'encargado'])) {
-      <a
-        routerLink="/reportes"
-        routerLinkActive="bg-rose-700 text-white"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
-      >Reportes</a>
-      <a
-        routerLink="/devoluciones/gestion"
-        routerLinkActive="bg-rose-700 text-white"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
-      >Devoluciones</a>
+        <a routerLink="/reportes" routerLinkActive="bg-rose-700 text-white" [routerLinkActiveOptions]="{ exact: true }" title="Reportes" class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800" (click)="closeMobileSidebar()"><fa-icon [icon]="faChartLine" [fixedWidth]="true" />@if (!sidebarCollapsed()) { <span>Reportes</span> }</a>
+        <a routerLink="/devoluciones/gestion" routerLinkActive="bg-rose-700 text-white" [routerLinkActiveOptions]="{ exact: true }" title="Devoluciones" class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800" (click)="closeMobileSidebar()"><fa-icon [icon]="faRotateLeft" [fixedWidth]="true" />@if (!sidebarCollapsed()) { <span>Devoluciones</span> }</a>
       }
       @if (auth.hasAnyRole(['administrador', 'cajero'])) {
-      <a
-        routerLink="/pos"
-        routerLinkActive="bg-rose-700 text-white"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="rounded-xl px-4 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800"
-      >Punto de venta</a>
+        <a routerLink="/pos" routerLinkActive="bg-rose-700 text-white" [routerLinkActiveOptions]="{ exact: true }" title="Punto de venta" class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-stone-300 hover:bg-stone-800" (click)="closeMobileSidebar()"><fa-icon [icon]="faCashRegister" [fixedWidth]="true" />@if (!sidebarCollapsed()) { <span>Punto de venta</span> }</a>
       }
     </nav>
+
+    <button type="button" class="mt-4 hidden items-center justify-center gap-3 rounded-xl border border-stone-700 px-3 py-2.5 text-sm font-semibold text-stone-300 hover:bg-stone-800 lg:flex" [attr.aria-label]="sidebarCollapsed() ? 'Expandir menú' : 'Contraer menú'" (click)="toggleSidebar()">
+      <fa-icon [icon]="sidebarCollapsed() ? faAnglesRight : faAnglesLeft" />
+      @if (!sidebarCollapsed()) { <span>Contraer menú</span> }
+    </button>
   </aside>
 
-  <div>
-    <header class="flex items-center justify-between border-b border-stone-200 bg-white px-5 py-4 lg:px-8">
-      <div>
-        <p class="text-sm font-semibold">{{ auth.user()?.nombres }} {{ auth.user()?.apellidos }}</p>
-        <p class="text-xs text-stone-500">{{ roleLabel() }}</p>
+  <div class="min-w-0">
+    <header class="sticky top-0 z-20 flex items-center justify-between border-b border-stone-200 bg-white/95 px-5 py-4 backdrop-blur lg:px-8">
+      <div class="flex items-center gap-3">
+        <button type="button" class="grid size-10 place-items-center rounded-xl border border-stone-300 text-stone-700 lg:hidden" aria-label="Abrir menú" (click)="openMobileSidebar()"><fa-icon [icon]="faBars" /></button>
+        <div><p class="text-sm font-semibold">{{ auth.user()?.nombres }} {{ auth.user()?.apellidos }}</p><p class="text-xs text-stone-500">{{ roleLabel() }}</p></div>
       </div>
-      <button type="button" class="text-sm font-semibold text-rose-700" (click)="logout()">
-        Cerrar sesión
-      </button>
+      <button type="button" class="flex items-center gap-2 text-sm font-semibold text-rose-700" (click)="logout()"><fa-icon [icon]="faRightFromBracket" /><span class="hidden sm:inline">Cerrar sesión</span></button>
     </header>
     <main class="p-5 lg:p-8"><router-outlet /></main>
   </div>

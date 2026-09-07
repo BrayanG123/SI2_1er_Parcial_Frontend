@@ -2,6 +2,8 @@ import { CurrencyPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { faCreditCard } from '@fortawesome/free-solid-svg-icons';
 import { forkJoin } from 'rxjs';
 
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -13,7 +15,7 @@ import { Order, OrderOptions } from '../../../orders/models/order.models';
 
 @Component({
   selector: 'app-cart-page',
-  imports: [CurrencyPipe, ReactiveFormsModule, RouterLink],
+  imports: [CurrencyPipe, ReactiveFormsModule, RouterLink, FontAwesomeModule],
   templateUrl: './cart-page.html',
 })
 export class CartPage {
@@ -27,6 +29,7 @@ export class CartPage {
   protected readonly loading = signal(true);
   protected readonly saving = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly faCreditCard = faCreditCard;
   protected readonly checkoutForm = this.fb.nonNullable.group({
     branch_id: ['', Validators.required],
   });
@@ -80,7 +83,7 @@ export class CartPage {
         this.receipt.set(order);
         this.cart.update((cart) => cart ? { ...cart, detalles: [], subtotal_estimado: 0 } : cart);
         this.saving.set(false);
-        void this.notifications.success('Pedido creado. El pago se habilitará en el siguiente módulo.');
+        void this.notifications.success('Pedido creado. Ya puedes continuar con el pago seguro.');
       },
       error: (error: ApiError) => { this.errorMessage.set(error.message); this.saving.set(false); },
     });

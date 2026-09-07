@@ -1,0 +1,30 @@
+<div class="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" [attr.aria-label]="title()">
+  <button
+    type="button"
+    class="absolute inset-0 bg-stone-950/50 backdrop-blur-[1px]"
+    aria-label="Cerrar formulario"
+    (click)="closed.emit()"
+  ></button>
+  <aside class="relative h-full w-full max-w-xl overflow-y-auto bg-stone-50 p-6 shadow-2xl sm:p-8">
+    <header class="flex items-start justify-between gap-5 border-b border-stone-200 pb-5">
+      <div>
+        <p class="text-xs font-semibold tracking-[0.18em] text-rose-700 uppercase">Formulario</p>
+        <h2 class="mt-2 text-2xl font-bold text-stone-950">{{ title() }}</h2>
+        @if (description()) {
+          <p class="mt-2 text-sm leading-6 text-stone-600">{{ description() }}</p>
+        }
+      </div>
+      <button
+        type="button"
+        class="grid size-10 shrink-0 place-items-center rounded-xl border border-stone-300 bg-white text-stone-600 hover:bg-stone-100"
+        aria-label="Cerrar"
+        (click)="closed.emit()"
+      >
+        <fa-icon [icon]="faXmark" />
+      </button>
+    </header>
+    <div class="pt-6">
+      <ng-content />
+    </div>
+  </aside>
+</div>

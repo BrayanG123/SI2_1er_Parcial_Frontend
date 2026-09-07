@@ -1,16 +1,19 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 import { Role } from '../../../../core/auth/auth.models';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ApiError } from '../../../../shared/models/api-error.model';
+import { AdminFormDrawer } from '../../../../shared/ui/admin-form-drawer/admin-form-drawer';
 import { UsersAdminService } from '../../data-access/users-admin.service';
 
 const PROTECTED_ROLES = ['cliente', 'administrador', 'encargado', 'cajero'];
 
 @Component({
   selector: 'app-roles-admin-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, AdminFormDrawer, FontAwesomeModule],
   templateUrl: './roles-admin-page.html',
 })
 export class RolesAdminPage {
@@ -22,6 +25,8 @@ export class RolesAdminPage {
   protected readonly editingId = signal<string | null>(null);
   protected readonly loading = signal(true);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly formOpen = signal(false);
+  protected readonly faPlus = faPlus;
   protected readonly form = this.fb.nonNullable.group({
     nombre: ['', [Validators.required, Validators.pattern(/^[a-z][a-z0-9_-]+$/)]],
     descripcion: [''],
@@ -29,6 +34,11 @@ export class RolesAdminPage {
 
   constructor() {
     this.loadRoles();
+  }
+
+  protected openCreate(): void {
+    this.cancelEdit();
+    this.formOpen.set(true);
   }
 
   protected save(): void {
@@ -55,11 +65,13 @@ export class RolesAdminPage {
   protected edit(role: Role): void {
     this.editingId.set(role.id);
     this.form.setValue({ nombre: role.nombre, descripcion: role.descripcion ?? '' });
+    this.formOpen.set(true);
   }
 
   protected cancelEdit(): void {
     this.editingId.set(null);
     this.form.reset({ nombre: '', descripcion: '' });
+    this.formOpen.set(false);
   }
 
   protected isProtected(role: Role): boolean {

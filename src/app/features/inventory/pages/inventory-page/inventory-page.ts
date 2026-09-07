@@ -1,10 +1,13 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { faBoxOpen, faSliders } from '@fortawesome/free-solid-svg-icons';
 
 import { AuthService } from '../../../../core/auth/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ApiError } from '../../../../shared/models/api-error.model';
+import { AdminFormDrawer } from '../../../../shared/ui/admin-form-drawer/admin-form-drawer';
 import { ProductVariant } from '../../../catalog/models/catalog.models';
 import { InventoryService } from '../../data-access/inventory.service';
 import {
@@ -17,7 +20,7 @@ import {
 
 @Component({
   selector: 'app-inventory-page',
-  imports: [ReactiveFormsModule, DatePipe],
+  imports: [ReactiveFormsModule, DatePipe, AdminFormDrawer, FontAwesomeModule],
   templateUrl: './inventory-page.html',
 })
 export class InventoryPage {
@@ -37,6 +40,9 @@ export class InventoryPage {
   protected readonly page = signal(1);
   protected readonly pageSize = 20;
   protected readonly total = signal(0);
+  protected readonly operationForm = signal<'receipt' | 'adjustment' | null>(null);
+  protected readonly faBoxOpen = faBoxOpen;
+  protected readonly faSliders = faSliders;
 
   protected readonly canManage = computed(() =>
     this.auth.hasAnyRole(['administrador', 'encargado']),
@@ -79,6 +85,13 @@ export class InventoryPage {
   constructor() {
     this.loadOptions();
   }
+
+  protected openOperation(kind: 'receipt' | 'adjustment'): void {
+    this.closeHistory();
+    this.operationForm.set(kind);
+  }
+
+  protected closeOperation(): void { this.operationForm.set(null); }
 
   protected cities(): { id: string; nombre: string }[] {
     const result = new Map<string, string>();
@@ -139,6 +152,7 @@ export class InventoryPage {
           this.saving.set(false);
           this.receiptForm.controls.cantidad.setValue(1);
           this.receiptForm.controls.observacion.setValue('');
+          this.closeOperation();
           void this.notifications.success('La recepción quedó registrada.');
           this.loadInventory();
         },
@@ -161,6 +175,7 @@ export class InventoryPage {
         this.saving.set(false);
         this.adjustmentForm.controls.cantidad.setValue(0);
         this.adjustmentForm.controls.motivo.setValue('');
+        this.closeOperation();
         void this.notifications.success('El ajuste quedó registrado con su motivo.');
         this.loadInventory();
       },
@@ -172,6 +187,7 @@ export class InventoryPage {
   }
 
   protected openHistory(item: InventoryItem): void {
+    this.closeOperation();
     this.selectedInventory.set(item);
     this.movements.set([]);
     this.loadingMovements.set(true);

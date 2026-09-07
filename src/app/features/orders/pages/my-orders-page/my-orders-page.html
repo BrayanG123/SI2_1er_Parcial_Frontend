@@ -17,7 +17,7 @@
           <div class="mt-4 flex flex-wrap gap-4 print:hidden">
             <button class="text-sm font-semibold text-stone-700" (click)="print()">Imprimir comprobante</button>
             @if (order.estado === 'CREADO' && order.canal !== 'POS') {
-              <a [routerLink]="['/pedidos', order.id, 'pago']" class="text-sm font-semibold text-emerald-700">Pagar en ambiente de prueba</a>
+              <a [routerLink]="['/pedidos', order.id, 'pago']" class="text-sm font-semibold text-emerald-700">Continuar al pago</a>
             }
             @if (order.estado === 'PAGADO' || order.estado === 'COMPLETADO') {
               <a [routerLink]="['/pedidos', order.id, 'devolucion']" class="text-sm font-semibold text-rose-700">Solicitar devolución</a>

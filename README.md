@@ -27,9 +27,9 @@ Primero inicia FastAPI en el puerto `8000` y después ejecuta:
 npm start
 ```
 
-Abre `http://localhost:4200`. La pantalla inicial informa por separado si
-FastAPI y PostgreSQL están disponibles. Si PostgreSQL todavía no fue creado, la
-API aparecerá disponible y la base como pendiente.
+Abre `http://localhost:4200`. La ruta inicial redirige directamente al catálogo
+público; la verificación técnica de FastAPI y PostgreSQL permanece disponible
+en los endpoints de salud del backend.
 
 ## Verificación
 
@@ -42,7 +42,7 @@ npm run build
 
 - `core/config`: URL e inyección de configuración de la API.
 - `core/http`: normalización común de errores HTTP.
-- `core/services`: salud de la API y notificaciones SweetAlert2.
+- `core/services`: notificaciones SweetAlert2 y servicios transversales.
 - `layouts`: shells de navegación por tipo de experiencia.
 - `features`: páginas cargadas de forma lazy.
 - `shared`: modelos y elementos visuales reutilizables.
@@ -90,6 +90,13 @@ autoridad al backend; el frontend solo presenta el estado recibido por la API.
   explícitas de reposición y reembolso; admite administrador y encargado.
 - `/reportes`: dashboard de ventas, inventario, reservas y devoluciones con
   filtros por período y sucursal; admite administrador y encargado.
+
+Las vistas administrativas muestran primero sus listas y filtros. Los
+formularios de alta y edición de usuarios, roles, ciudades, sucursales,
+categorías, proveedores, catálogo e inventario, además de la finalización de
+devoluciones, se abren en un panel lateral sin desplazar el contenido principal.
+El menú administrativo es colapsable en escritorio y desplegable en pantallas
+pequeñas, con iconos Font Awesome.
 
 El detalle de `/catalogo/:id` consulta la disponibilidad de la variante
 seleccionada, la presenta por sucursal y permite añadirla a un borrador de

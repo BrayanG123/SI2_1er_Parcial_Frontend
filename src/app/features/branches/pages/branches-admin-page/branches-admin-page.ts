@@ -1,15 +1,18 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ApiError } from '../../../../shared/models/api-error.model';
+import { AdminFormDrawer } from '../../../../shared/ui/admin-form-drawer/admin-form-drawer';
 import { CitySelect } from '../../components/city-select/city-select';
 import { BranchesAdminService } from '../../data-access/branches-admin.service';
 import { Branch, City } from '../../models/branch.models';
 
 @Component({
   selector: 'app-branches-admin-page',
-  imports: [ReactiveFormsModule, CitySelect],
+  imports: [ReactiveFormsModule, CitySelect, AdminFormDrawer, FontAwesomeModule],
   templateUrl: './branches-admin-page.html',
 })
 export class BranchesAdminPage {
@@ -31,6 +34,8 @@ export class BranchesAdminPage {
   protected readonly cityTotal = signal(0);
   protected readonly branchTotal = signal(0);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly formKind = signal<'city' | 'branch' | null>(null);
+  protected readonly faPlus = faPlus;
   protected readonly pageSize = 10;
 
   protected readonly citySearch = this.fb.nonNullable.control('');
@@ -53,6 +58,9 @@ export class BranchesAdminPage {
     this.loadCityOptions();
     this.loadBranches();
   }
+
+  protected openCityCreate(): void { this.cancelCityEdit(); this.formKind.set('city'); }
+  protected openBranchCreate(): void { this.cancelBranchEdit(); this.formKind.set('branch'); }
 
   protected saveCity(): void {
     if (this.cityForm.invalid) {
@@ -79,11 +87,13 @@ export class BranchesAdminPage {
   protected editCity(city: City): void {
     this.editingCityId.set(city.id);
     this.cityForm.setValue({ nombre: city.nombre, departamento: city.departamento ?? '' });
+    this.formKind.set('city');
   }
 
   protected cancelCityEdit(): void {
     this.editingCityId.set(null);
     this.cityForm.reset({ nombre: '', departamento: '' });
+    this.formKind.set(null);
   }
 
   protected async deleteCity(city: City): Promise<void> {
@@ -128,6 +138,7 @@ export class BranchesAdminPage {
       horario_informativo: branch.horario_informativo,
       activa: branch.activa,
     });
+    this.formKind.set('branch');
   }
 
   protected cancelBranchEdit(): void {
@@ -135,6 +146,7 @@ export class BranchesAdminPage {
     this.branchForm.reset({
       ciudad_id: '', nombre: '', direccion: '', telefono: '', horario_informativo: '', activa: true,
     });
+    this.formKind.set(null);
   }
 
   protected async toggleBranch(branch: Branch): Promise<void> {

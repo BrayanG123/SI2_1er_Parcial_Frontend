@@ -1,10 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { forkJoin } from 'rxjs';
 
 import { Role, User } from '../../../../core/auth/auth.models';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ApiError } from '../../../../shared/models/api-error.model';
+import { AdminFormDrawer } from '../../../../shared/ui/admin-form-drawer/admin-form-drawer';
 import { BranchSelect } from '../../../branches/components/branch-select/branch-select';
 import { BranchesAdminService } from '../../../branches/data-access/branches-admin.service';
 import { Branch } from '../../../branches/models/branch.models';
@@ -12,7 +15,7 @@ import { UsersAdminService } from '../../data-access/users-admin.service';
 
 @Component({
   selector: 'app-users-admin-page',
-  imports: [ReactiveFormsModule, BranchSelect],
+  imports: [ReactiveFormsModule, BranchSelect, AdminFormDrawer, FontAwesomeModule],
   templateUrl: './users-admin-page.html',
 })
 export class UsersAdminPage {
@@ -27,6 +30,8 @@ export class UsersAdminPage {
   protected readonly loading = signal(true);
   protected readonly saving = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly formOpen = signal(false);
+  protected readonly faPlus = faPlus;
   protected readonly form = this.fb.nonNullable.group({
     nombres: ['', [Validators.required, Validators.minLength(2)]],
     apellidos: ['', [Validators.required, Validators.minLength(2)]],
@@ -38,6 +43,12 @@ export class UsersAdminPage {
 
   constructor() {
     this.loadData();
+  }
+
+  protected openCreate(): void { this.formOpen.set(true); }
+  protected closeForm(): void {
+    this.formOpen.set(false);
+    this.form.reset({ role: 'cliente', branchId: '' });
   }
 
   protected createUser(): void {
@@ -60,7 +71,7 @@ export class UsersAdminPage {
       .subscribe({
         next: (user) => {
           this.users.update((users) => [user, ...users]);
-          this.form.reset({ role: 'cliente', branchId: '' });
+          this.closeForm();
           this.saving.set(false);
         },
         error: (error: ApiError) => {

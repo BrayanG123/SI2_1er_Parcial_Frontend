@@ -1,14 +1,17 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ApiError } from '../../../../shared/models/api-error.model';
+import { AdminFormDrawer } from '../../../../shared/ui/admin-form-drawer/admin-form-drawer';
 import { CategoriesAdminService } from '../../data-access/categories-admin.service';
 import { Category } from '../../models/category.models';
 
 @Component({
   selector: 'app-categories-admin-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, AdminFormDrawer, FontAwesomeModule],
   templateUrl: './categories-admin-page.html',
 })
 export class CategoriesAdminPage {
@@ -22,6 +25,8 @@ export class CategoriesAdminPage {
   protected readonly page = signal(1);
   protected readonly total = signal(0);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly formOpen = signal(false);
+  protected readonly faPlus = faPlus;
   protected readonly pageSize = 10;
   protected readonly search = this.fb.nonNullable.control('');
   protected readonly form = this.fb.nonNullable.group({
@@ -30,6 +35,8 @@ export class CategoriesAdminPage {
   });
 
   constructor() { this.load(); }
+
+  protected openCreate(): void { this.cancelEdit(); this.formOpen.set(true); }
 
   protected save(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
@@ -48,11 +55,13 @@ export class CategoriesAdminPage {
   protected edit(item: Category): void {
     this.editingId.set(item.id);
     this.form.setValue({ nombre: item.nombre, descripcion: item.descripcion ?? '' });
+    this.formOpen.set(true);
   }
 
   protected cancelEdit(): void {
     this.editingId.set(null);
     this.form.reset({ nombre: '', descripcion: '' });
+    this.formOpen.set(false);
   }
 
   protected async toggle(item: Category): Promise<void> {
